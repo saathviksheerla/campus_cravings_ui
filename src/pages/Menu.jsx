@@ -8,14 +8,19 @@ function MenuItem({ item, onOrder }) {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="p-6">
-        <div className="flex items-center justify-between">
+        <img
+          src={item.imageUrl}
+          className="m-auto w-66 h-66 object-cover rounded-lg shadow-sm"
+          alt={item.name}
+        />
+        <div className="mt-2 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
-          <span className="px-2 py-1 text-green-800 text-sm font-medium bg-green-100 rounded-full">
+          <h3 className="px-2 py-1 text-green-800 text-sm font-medium bg-green-100 rounded-full">
             ₹{item.price}
-          </span>
+          </h3>
         </div>
-        <p className="mt-2 text-gray-600">{item.description}</p>
-        <div className="mt-4">
+        <p className="mt-1 text-gray-600">{item.description}</p>
+        <div className="mt-2">
           <p className="text-sm text-gray-500">
             Preparation time: {item.preparationTime} mins
           </p>
@@ -33,7 +38,7 @@ function MenuItem({ item, onOrder }) {
 
 function MenuSection({ title, items, onOrder }) {
   if (items.length === 0) return null;
-  
+
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
@@ -142,7 +147,7 @@ export default function Menu() {
           Fresh, delicious meals prepared daily
         </p>
       </div>
-      
+
       {Object.entries(categorizedItems).map(([category, items]) => (
         <MenuSection
           key={category}
