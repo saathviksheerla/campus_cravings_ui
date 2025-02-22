@@ -6,8 +6,6 @@ import { useAuth } from '../context/AuthenticationContext';
 import { register } from '../services/api';
 import toast from 'react-hot-toast';
 import AuthenticationLayout from '../components/layouts/AuthenticationLayout';
-import FormInput from '../components/common/FormInput';
-import Button from '../components/common/Button';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -20,20 +18,13 @@ export default function Register() {
   });
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const response = await register(formData);
       login(response.data.token, response.data.user);
-      toast.success('Registration successful!');
+      toast.success('Welcome to College Cravings!');
       navigate('/menu');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Registration failed');
@@ -43,47 +34,78 @@ export default function Register() {
   };
 
   return (
-    <AuthenticationLayout title="Create an Account">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <FormInput
-          label="Full Name"
-          type="text"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
-        <FormInput
-          label="Email Address"
-          type="email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
-        <FormInput
-          label="College ID"
-          type="text"
-          name="collegeId"
-          value={formData.collegeId}
-          onChange={handleChange}
-          required
-        />
-        <FormInput
-          label="Password"
-          type="password"
-          name="password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
-        <Button
+    <AuthenticationLayout 
+      title="Create Account" 
+      subtitle="Join College Cravings today"
+      linkText="Already have an account? Sign in"
+      linkUrl="/login"
+    >
+      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-primary">
+              Full Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="mt-1 block w-full border-2 border-primary/10 rounded-md px-4 py-2 font-body focus:border-accent focus:ring-0"
+            />
+          </div>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-primary">
+              Email Address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="mt-1 block w-full border-2 border-primary/10 rounded-md px-4 py-2 font-body focus:border-accent focus:ring-0"
+            />
+          </div>
+          <div>
+            <label htmlFor="collegeId" className="block text-sm font-medium text-primary">
+              College ID
+            </label>
+            <input
+              id="collegeId"
+              name="collegeId"
+              type="text"
+              required
+              value={formData.collegeId}
+              onChange={(e) => setFormData({ ...formData, collegeId: e.target.value })}
+              className="mt-1 block w-full border-2 border-primary/10 rounded-md px-4 py-2 font-body focus:border-accent focus:ring-0"
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-primary">
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              className="mt-1 block w-full border-2 border-primary/10 rounded-md px-4 py-2 font-body focus:border-accent focus:ring-0"
+            />
+          </div>
+        </div>
+        <button
           type="submit"
-          fullWidth
-          loading={loading}
+          disabled={loading}
+          className="w-full bg-accent text-primary font-body font-medium py-3 rounded-md hover:bg-accent-dark transition-colors disabled:opacity-50"
         >
-          Create Account
-        </Button>
+          {loading ? 'Creating account...' : 'Create Account'}
+        </button>
       </form>
     </AuthenticationLayout>
   );

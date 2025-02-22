@@ -6,24 +6,26 @@ import { getMenu, createOrder } from '../services/api';
 
 function MenuItem({ item, onOrder, onEdit, isAdmin }) {
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
+    <div className="bg-secondary rounded-lg shadow-elegant hover:shadow-luxury transition-shadow duration-300">
       <div className="p-6">
         <img
           src={item.imageUrl}
-          className="m-auto w-66 h-66 object-cover rounded-lg shadow-sm"
+          className="w-full h-48 object-cover rounded-lg"
           alt={item.name}
         />
-        <div className="mt-2 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
-          <h3 className="px-2 py-1 text-green-800 text-sm font-medium bg-green-100 rounded-full">
-            ₹{item.price}
-          </h3>
-        </div>
-        <p className="mt-1 text-gray-600">{item.description}</p>
-        <div className="mt-2">
-          <p className="text-sm text-gray-500">
-            Preparation time: {item.preparationTime} mins
-          </p>
+        <div className="mt-4">
+          <div className="flex justify-between items-center">
+            <h3 className="font-display text-xl text-primary">{item.name}</h3>
+            <span className="px-3 py-1 bg-accent/10 text-primary font-body rounded-full">
+              ₹{item.price}
+            </span>
+          </div>
+          <p className="mt-2 text-primary/70 font-body">{item.description}</p>
+          <div className="mt-2">
+            <p className="text-sm text-gray-500">
+              Preparation time: {item.preparationTime} mins
+            </p>
+          </div>
         </div>
         {isAdmin ? (
           <button
@@ -35,13 +37,12 @@ function MenuItem({ item, onOrder, onEdit, isAdmin }) {
         ) : (
           <button
             onClick={() => onOrder(item)}
-            className="mt-4 w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-          >
+            className="mt-6 w-full py-3 bg-accent text-primary font-body font-medium rounded-md hover:bg-accent-dark transition-colors"          >
             Order Now
           </button>
         )}
       </div>
-    </div>
+    </div >
   );
 }
 
