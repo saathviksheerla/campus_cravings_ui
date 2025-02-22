@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthenticationContext';
 import { getMenu, createOrder } from '../services/api';
 
-function MenuItem({ item, onOrder }) {
+function MenuItem({ item, onOrder, onEdit, isAdmin }) {
   return (
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <div className="p-6">
@@ -25,12 +25,21 @@ function MenuItem({ item, onOrder }) {
             Preparation time: {item.preparationTime} mins
           </p>
         </div>
-        <button
-          onClick={() => onOrder(item)}
-          className="mt-4 w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        >
-          Order Now
-        </button>
+        {isAdmin ? (
+          <button
+            onClick={() => onEdit(item)}
+            className="mt-4 w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            Edit Item
+          </button>
+        ) : (
+          <button
+            onClick={() => onOrder(item)}
+            className="mt-4 w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            Order Now
+          </button>
+        )}
       </div>
     </div>
   );

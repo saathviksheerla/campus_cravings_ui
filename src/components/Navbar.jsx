@@ -24,9 +24,14 @@ export default function Navbar() {
               <Link to="/menu" className="inline-flex items-center px-1 pt-1 text-gray-500 hover:text-gray-900">
                 Menu
               </Link>
-              {user && (
+              {user && user.role === 'client' && (
                 <Link to="/orders" className="inline-flex items-center px-1 pt-1 text-gray-500 hover:text-gray-900">
                   Orders
+                </Link>
+              )}
+              {user && user.role === 'admin' && (
+                <Link to="/admin" className="inline-flex items-center px-1 pt-1 text-gray-500 hover:text-gray-900">
+                  Admin Dashboard
                 </Link>
               )}
             </div>

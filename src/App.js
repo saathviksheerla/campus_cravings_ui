@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './context/AuthenticationContext';
 import { AuthenticationProvider } from './context/AuthenticationContext';
+import { AdminRoute } from './components/AdminRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -12,6 +13,7 @@ import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -33,6 +35,7 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function AppRoutes() {
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
@@ -58,7 +61,15 @@ function AppRoutes() {
               </ProtectedRoute>
             }
           />
-          {/* Catch all route for 404 */}
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
