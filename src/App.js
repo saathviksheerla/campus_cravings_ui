@@ -14,6 +14,7 @@ import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import ManageMenu from './pages/admin/ManageMenu';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -70,6 +71,7 @@ function AppRoutes() {
               </AdminRoute>
             }
           />
+          <Route path="/admin/menu" element={<ManageMenu/>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
