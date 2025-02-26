@@ -17,6 +17,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageMenu from './pages/admin/ManageMenu';
+import ManageOrders from './pages/admin/ManageOrders';
 import './App.css';
 
 const ProtectedRoute = ({ children }) => {
@@ -38,7 +39,6 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function AppRoutes() {
-
   return (
     <div className="min-h-screen bg-gray-100">
       <Navbar />
@@ -77,7 +77,22 @@ function AppRoutes() {
               </AdminRoute>
             }
           />
-          <Route path="/admin/menu" element={<ManageMenu />} />
+          <Route
+            path="/admin/menu"
+            element={
+              <AdminRoute>
+                <ManageMenu />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <AdminRoute>
+                <ManageOrders />
+              </AdminRoute>
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
