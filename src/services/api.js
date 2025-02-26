@@ -24,9 +24,13 @@ export const getUserProfile = () => api.get('/users/me');
 // Menu
 export const getMenu = () => api.get('/menu');
 export const createMenuItem = (data) => api.post('/menu', data);
+export const updateMenuItem = (id, data) => api.put(`/menu/${id}`, data);
+export const deleteMenuItem = (id) => api.delete(`/menu/${id}`);
 
 // Orders
 export const createOrder = (orderData) => api.post('/orders', orderData);
 export const getOrders = () => api.get('/orders');
+export const getAdminOrders = () => api.get('/orders/admin/all');
+export const updateOrderStatus = (orderId, status) => api.put(`/orders/admin/${orderId}/status`, { status });
 
 export default api;
