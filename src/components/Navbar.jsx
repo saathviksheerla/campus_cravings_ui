@@ -2,10 +2,14 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthenticationContext';
+import { useCart } from '../context/CartContext';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { getCartItemsCount } = useCart();
   const navigate = useNavigate();
+
+  const cartItemsCount = getCartItemsCount();
 
   const handleLogout = () => {
     logout();
@@ -41,6 +45,14 @@ export default function Navbar() {
           <div className="flex items-center">
             {user ? (
               <div className="flex items-center space-x-4">
+                <Link to="/cart" className="relative text-secondary hover:text-accent transition-colors">
+                  Cart
+                  {cartItemsCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-accent text-primary text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {cartItemsCount}
+                    </span>
+                  )}
+                </Link>
                 <Link to="/profile" className="text-secondary hover:text-accent transition-colors">
                   Profile
                 </Link>

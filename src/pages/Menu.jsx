@@ -2,9 +2,17 @@
 import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthenticationContext';
+import { useCart } from '../context/CartContext';
 import { getMenu, createOrder } from '../services/api';
 
 function MenuItem({ item, onOrder, onEdit, isAdmin }) {
+  const { addToCart } = useCart();
+
+  const handleAddToCart = () => {
+    addToCart(item, 1);
+    toast.success(`${item.name} added to cart`);
+  };
+
   return (
     <div className="bg-secondary rounded-lg shadow-elegant hover:shadow-luxury transition-shadow duration-300">
       <div className="p-6">
@@ -35,14 +43,23 @@ function MenuItem({ item, onOrder, onEdit, isAdmin }) {
             Edit Item
           </button>
         ) : (
-          <button
-            onClick={() => onOrder(item)}
-            className="mt-6 w-full py-3 bg-accent text-primary font-body font-medium rounded-md hover:bg-accent-dark transition-colors"          >
-            Order Now
-          </button>
+          <div className="mt-6 flex gap-2">
+            <button
+              onClick={handleAddToCart}
+              className="flex-1 py-3 bg-accent text-primary font-body font-medium rounded-md hover:bg-accent-dark transition-colors"
+            >
+              Add to Cart
+            </button>
+            <button
+              onClick={() => onOrder(item)}
+              className="flex-1 py-3 border border-accent text-accent font-body font-medium rounded-md hover:bg-accent/10 transition-colors"
+            >
+              Order Now
+            </button>
+          </div>
         )}
       </div>
-    </div >
+    </div>
   );
 }
 

@@ -4,11 +4,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './context/AuthenticationContext';
 import { AuthenticationProvider } from './context/AuthenticationContext';
+import { CartProvider } from './context/CartContext';
 import { AdminRoute } from './components/AdminRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Menu from './pages/Menu';
+import Cart from './pages/Cart';
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
@@ -19,7 +21,7 @@ import './App.css';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -27,11 +29,11 @@ const ProtectedRoute = ({ children }) => {
       </div>
     );
   }
-  
+
   if (!user) {
     return <Navigate to="/login" />;
   }
-  
+
   return children;
 };
 
@@ -46,6 +48,10 @@ function AppRoutes() {
           <Route path="/menu" element={<Menu />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route
+            path="/cart"
+            element={<Cart />}
+          />
           <Route
             path="/orders"
             element={
@@ -71,7 +77,7 @@ function AppRoutes() {
               </AdminRoute>
             }
           />
-          <Route path="/admin/menu" element={<ManageMenu/>} />
+          <Route path="/admin/menu" element={<ManageMenu />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -84,9 +90,11 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthenticationProvider>
-        <Router>
-          <AppRoutes />
-        </Router>
+        <CartProvider>
+          <Router>
+            <AppRoutes />
+          </Router>
+        </CartProvider>
       </AuthenticationProvider>
     </ErrorBoundary>
   );
