@@ -13,6 +13,7 @@ export default function ManageMenu() {
     name: '',
     price: '',
     description: '',
+    imageUrl: '',
     category: '',
     preparationTime: '',
     available: true
@@ -40,11 +41,11 @@ export default function ManageMenu() {
   const checkPendingOrders = async () => {
     try {
       const response = await api.get('/orders/admin/all');
-      const hasPendingOrders = response.data.some(order => 
+      const hasPendingOrders = response.data.some(order =>
         ['pending', 'confirmed', 'preparing'].includes(order.status)
       );
       setPendingOrders(hasPendingOrders);
-      
+
       if (hasPendingOrders) {
         toast.info('Some menu items cannot be edited while there are pending orders');
       }
@@ -59,13 +60,14 @@ export default function ManageMenu() {
       await createMenuItem(newItem);
       toast.success('Menu item created successfully');
       await fetchMenuItems();
-      setNewItem({ 
-        name: '', 
-        price: '', 
-        description: '', 
+      setNewItem({
+        name: '',
+        price: '',
+        description: '',
+        imageUrl: '',
         category: '',
         preparationTime: '',
-        available: true 
+        available: true
       });
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create item');
@@ -91,7 +93,7 @@ export default function ManageMenu() {
       toast.error('Cannot delete items while there are pending orders');
       return;
     }
-    
+
     try {
       await api.delete(`/menu/${id}`);
       toast.success('Menu item deleted successfully');
@@ -113,13 +115,13 @@ export default function ManageMenu() {
   return (
     <div className="max-w-4xl mx-auto p-4">
       <h2 className="text-2xl font-bold mb-6">Manage Menu</h2>
-      
+
       {pendingOrders && (
         <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
           Warning: Some operations may be restricted while there are pending orders
         </div>
       )}
-      
+
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
@@ -138,11 +140,11 @@ export default function ManageMenu() {
               type="text"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={newItem.name}
-              onChange={(e) => setNewItem({...newItem, name: e.target.value})}
+              onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Price (₹)
@@ -152,11 +154,11 @@ export default function ManageMenu() {
               step="0.01"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={newItem.price}
-              onChange={(e) => setNewItem({...newItem, price: e.target.value})}
+              onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
               required
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Description
@@ -165,10 +167,22 @@ export default function ManageMenu() {
               type="text"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={newItem.description}
-              onChange={(e) => setNewItem({...newItem, description: e.target.value})}
+              onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
             />
           </div>
-          
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Image Link
+            </label>
+            <input
+              type="text"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={newItem.imageUrl}
+              onChange={(e) => setNewItem({ ...newItem, imageUrl: e.target.value })}
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Category
@@ -176,7 +190,7 @@ export default function ManageMenu() {
             <select
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={newItem.category}
-              onChange={(e) => setNewItem({...newItem, category: e.target.value})}
+              onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
               required
             >
               <option value="">Select a category</option>
@@ -187,7 +201,7 @@ export default function ManageMenu() {
               <option value="Desserts">Desserts</option>
             </select>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Preparation Time (minutes)
@@ -196,7 +210,7 @@ export default function ManageMenu() {
               type="number"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={newItem.preparationTime}
-              onChange={(e) => setNewItem({...newItem, preparationTime: e.target.value})}
+              onChange={(e) => setNewItem({ ...newItem, preparationTime: e.target.value })}
             />
           </div>
 
@@ -205,11 +219,11 @@ export default function ManageMenu() {
               type="checkbox"
               className="h-4 w-4 text-blue-600 border-gray-300 rounded"
               checked={newItem.available}
-              onChange={(e) => setNewItem({...newItem, available: e.target.checked})}
+              onChange={(e) => setNewItem({ ...newItem, available: e.target.checked })}
             />
             <label className="ml-2 text-sm text-gray-700">Available</label>
           </div>
-          
+
           <button
             type="submit"
             className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -230,25 +244,31 @@ export default function ManageMenu() {
                   type="text"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   value={editItem.name}
-                  onChange={(e) => setEditItem({...editItem, name: e.target.value})}
+                  onChange={(e) => setEditItem({ ...editItem, name: e.target.value })}
                 />
                 <input
                   type="number"
                   step="0.01"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   value={editItem.price}
-                  onChange={(e) => setEditItem({...editItem, price: e.target.value})}
+                  onChange={(e) => setEditItem({ ...editItem, price: e.target.value })}
                 />
                 <input
                   type="text"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   value={editItem.description}
-                  onChange={(e) => setEditItem({...editItem, description: e.target.value})}
+                  onChange={(e) => setEditItem({ ...editItem, description: e.target.value })}
+                />
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  value={editItem.imageUrl}
+                  onChange={(e) => setEditItem({ ...editItem, imageUrl: e.target.value })}
                 />
                 <select
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   value={editItem.category}
-                  onChange={(e) => setEditItem({...editItem, category: e.target.value})}
+                  onChange={(e) => setEditItem({ ...editItem, category: e.target.value })}
                 >
                   <option value="Sandwiches">Sandwiches</option>
                   <option value="Burgers">Burgers</option>
@@ -261,14 +281,14 @@ export default function ManageMenu() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   placeholder="Preparation Time (minutes)"
                   value={editItem.preparationTime}
-                  onChange={(e) => setEditItem({...editItem, preparationTime: e.target.value})}
+                  onChange={(e) => setEditItem({ ...editItem, preparationTime: e.target.value })}
                 />
                 <div className="flex items-center">
                   <input
                     type="checkbox"
                     className="h-4 w-4 text-blue-600 border-gray-300 rounded"
                     checked={editItem.available}
-                    onChange={(e) => setEditItem({...editItem, available: e.target.checked})}
+                    onChange={(e) => setEditItem({ ...editItem, available: e.target.checked })}
                   />
                   <label className="ml-2 text-sm text-gray-700">Available</label>
                 </div>
@@ -294,6 +314,11 @@ export default function ManageMenu() {
                   <h3 className="font-semibold">{item.name}</h3>
                   <p className="text-gray-600">₹{item.price}</p>
                   <p className="text-sm text-gray-500">{item.description}</p>
+                  <img
+                    src={item.imageUrl}
+                    className="w-full h-24 object-cover rounded-lg"
+                    alt={item.name}
+                  />
                   <p className="text-sm text-gray-500">Category: {item.category}</p>
                   <p className="text-sm text-gray-500">
                     Preparation Time: {item.preparationTime || 'Not specified'} mins

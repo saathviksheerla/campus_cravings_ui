@@ -9,7 +9,7 @@ import AuthenticationLayout from '../components/layouts/AuthenticationLayout';
 export default function Login() {
   const navigate = useNavigate();
   const { login: authLogin } = useAuth();
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ email: 'stu@clg.edu', password: '9441' });
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
