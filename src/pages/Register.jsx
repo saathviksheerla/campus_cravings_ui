@@ -24,7 +24,7 @@ export default function Register() {
     try {
       const response = await register(formData);
       login(response.data.token, response.data.user);
-      toast.success('Welcome to College Cravings!');
+      toast.success('Welcome to Campus Cravings!');
       navigate('/menu');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Registration failed');
@@ -36,7 +36,7 @@ export default function Register() {
   return (
     <AuthenticationLayout 
       title="Create Account" 
-      subtitle="Join College Cravings today"
+      subtitle="Join Campus Cravings today"
       linkText="Already have an account? Sign in"
       linkUrl="/login"
     >
