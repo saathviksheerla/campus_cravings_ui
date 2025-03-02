@@ -3,36 +3,95 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthenticationContext';
 
 const CartContext = createContext(null);
+const CART_STORAGE_KEY = 'campus-cravings-cart';
 
 export const CartProvider = ({ children }) => {
   const { user } = useAuth();
   const [cartItems, setCartItems] = useState([]);
+  const [isCartLoaded, setIsCartLoaded] = useState(false);
   
-  // Load cart from localStorage on component mount
+  // Load cart from localStorage on component mount or when user changes
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        setCartItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error('Error parsing cart data', error);
-        setCartItems([]);
+    const loadCart = () => {
+      if (user) {
+        try {
+          const savedCart = localStorage.getItem(`${CART_STORAGE_KEY}-${user._id}`);
+          if (savedCart) {
+            setCartItems(JSON.parse(savedCart));
+          } else {
+            setCartItems([]);
+          }
+        } catch (error) {
+          console.error('Error parsing cart data', error);
+          setCartItems([]);
+        }
+      } else {
+        // For guest users or when no user is logged in
+        try {
+          const guestCart = localStorage.getItem(`${CART_STORAGE_KEY}-guest`);
+          if (guestCart) {
+            setCartItems(JSON.parse(guestCart));
+          } else {
+            setCartItems([]);
+          }
+        } catch (error) {
+          console.error('Error parsing guest cart data', error);
+          setCartItems([]);
+        }
       }
-    }
-  }, []);
+      setIsCartLoaded(true);
+    };
+
+    loadCart();
+  }, [user]);
   
   // Save cart to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('cart', JSON.stringify(cartItems));
-  }, [cartItems]);
-  
-  // Clear cart when user logs out
-  useEffect(() => {
-    if (!user) {
-      setCartItems([]);
-      localStorage.removeItem('cart');
+    // Only save cart after initial load to prevent overwriting with empty array
+    if (isCartLoaded) {
+      if (user) {
+        localStorage.setItem(`${CART_STORAGE_KEY}-${user._id}`, JSON.stringify(cartItems));
+      } else {
+        localStorage.setItem(`${CART_STORAGE_KEY}-guest`, JSON.stringify(cartItems));
+      }
     }
-  }, [user]);
+  }, [cartItems, user, isCartLoaded]);
+  
+  // Transfer guest cart to user cart on login
+  useEffect(() => {
+    if (user && isCartLoaded) {
+      const guestCart = localStorage.getItem(`${CART_STORAGE_KEY}-guest`);
+      if (guestCart && guestCart !== '[]') {
+        const guestCartItems = JSON.parse(guestCart);
+        // Merge with any existing user cart
+        const userCart = localStorage.getItem(`${CART_STORAGE_KEY}-${user._id}`);
+        if (userCart) {
+          const userCartItems = JSON.parse(userCart);
+          // Merge logic - add guest items to user cart
+          const mergedCart = [...userCartItems];
+          
+          guestCartItems.forEach(guestItem => {
+            const existingItemIndex = mergedCart.findIndex(item => item._id === guestItem._id);
+            if (existingItemIndex !== -1) {
+              // Update quantity if item already exists
+              mergedCart[existingItemIndex].quantity += guestItem.quantity;
+            } else {
+              // Add new item
+              mergedCart.push(guestItem);
+            }
+          });
+          
+          setCartItems(mergedCart);
+        } else {
+          // No existing user cart, just use guest cart
+          setCartItems(guestCartItems);
+        }
+        
+        // Clear guest cart
+        localStorage.removeItem(`${CART_STORAGE_KEY}-guest`);
+      }
+    }
+  }, [user, isCartLoaded]);
   
   const addToCart = (item, quantity = 1) => {
     setCartItems(prevItems => {
@@ -69,7 +128,11 @@ export const CartProvider = ({ children }) => {
   
   const clearCart = () => {
     setCartItems([]);
-    localStorage.removeItem('cart');
+    if (user) {
+      localStorage.removeItem(`${CART_STORAGE_KEY}-${user._id}`);
+    } else {
+      localStorage.removeItem(`${CART_STORAGE_KEY}-guest`);
+    }
   };
   
   const getCartTotal = () => {
