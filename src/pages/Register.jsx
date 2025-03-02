@@ -1,6 +1,5 @@
 // src/pages/Register.jsx
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthenticationContext';
 import { register } from '../services/api';
@@ -9,22 +8,35 @@ import AuthenticationLayout from '../components/layouts/AuthenticationLayout';
 
 export default function Register() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { user, login: authLogin } = useAuth();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    collegeId: ''
+    passwordConfirmation: ''
   });
   const [loading, setLoading] = useState(false);
 
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (formData.password !== formData.passwordConfirmation) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    
     setLoading(true);
     try {
       const response = await register(formData);
-      login(response.data.token, response.data.user);
-      toast.success('Welcome to Campus Cravings!');
+      authLogin(response.data.token, response.data.user);
+      toast.success('Account created successfully!');
       navigate('/menu');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Registration failed');
@@ -35,8 +47,8 @@ export default function Register() {
 
   return (
     <AuthenticationLayout 
-      title="Create Account" 
-      subtitle="Join Campus Cravings today"
+      title="Create an Account" 
+      subtitle="Join us to order from your campus canteen"
       linkText="Already have an account? Sign in"
       linkUrl="/login"
     >
@@ -71,20 +83,6 @@ export default function Register() {
             />
           </div>
           <div>
-            <label htmlFor="collegeId" className="block text-sm font-medium text-primary">
-              College ID
-            </label>
-            <input
-              id="collegeId"
-              name="collegeId"
-              type="text"
-              required
-              value={formData.collegeId}
-              onChange={(e) => setFormData({ ...formData, collegeId: e.target.value })}
-              className="mt-1 block w-full border-2 border-primary/10 rounded-md px-4 py-2 font-body focus:border-accent focus:ring-0"
-            />
-          </div>
-          <div>
             <label htmlFor="password" className="block text-sm font-medium text-primary">
               Password
             </label>
@@ -98,13 +96,27 @@ export default function Register() {
               className="mt-1 block w-full border-2 border-primary/10 rounded-md px-4 py-2 font-body focus:border-accent focus:ring-0"
             />
           </div>
+          <div>
+            <label htmlFor="passwordConfirmation" className="block text-sm font-medium text-primary">
+              Confirm Password
+            </label>
+            <input
+              id="passwordConfirmation"
+              name="passwordConfirmation"
+              type="password"
+              required
+              value={formData.passwordConfirmation}
+              onChange={(e) => setFormData({ ...formData, passwordConfirmation: e.target.value })}
+              className="mt-1 block w-full border-2 border-primary/10 rounded-md px-4 py-2 font-body focus:border-accent focus:ring-0"
+            />
+          </div>
         </div>
         <button
           type="submit"
           disabled={loading}
           className="w-full bg-accent text-primary font-body font-medium py-3 rounded-md hover:bg-accent-dark transition-colors disabled:opacity-50"
         >
-          {loading ? 'Creating account...' : 'Create Account'}
+          {loading ? 'Creating account...' : 'Sign Up'}
         </button>
       </form>
     </AuthenticationLayout>
