@@ -1,5 +1,5 @@
 // src/pages/Login.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthenticationContext';
 import { login } from '../services/api';
@@ -8,9 +8,16 @@ import AuthenticationLayout from '../components/layouts/AuthenticationLayout';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login: authLogin } = useAuth();
+  const { user, login: authLogin } = useAuth();
   const [formData, setFormData] = useState({ email: 'stu@clg.edu', password: '9441' });
   const [loading, setLoading] = useState(false);
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

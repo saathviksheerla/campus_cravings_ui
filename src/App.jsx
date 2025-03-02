@@ -31,7 +31,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  if (!user) {
+  if (!user && !loading) {
     return <Navigate to="/login" />;
   }
 
