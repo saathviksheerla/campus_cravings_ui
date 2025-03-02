@@ -24,7 +24,7 @@ export default function Navbar() {
             <Link
               to="/"
               className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-display font-bold text-accent">College Cravings</span>
+              <span className="text-xl font-display font-bold text-accent">Campus Cravings</span>
             </Link>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link to="/menu" className="inline-flex items-center px-1 pt-1 text-secondary hover:text-accent transition-colors">
