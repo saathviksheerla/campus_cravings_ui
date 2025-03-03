@@ -8,6 +8,7 @@ import { CartProvider } from './context/CartContext';
 import { AdminRoute } from './components/AdminRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
+import MobileBottomNav from './components/MobileBottomNav';
 import Home from './pages/Home';
 import Menu from './pages/Menu';
 import Cart from './pages/Cart';
@@ -40,7 +41,7 @@ const ProtectedRoute = ({ children }) => {
 
 function AppRoutes() {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 pb-16 sm:pb-0">
       <Navbar />
       <main className="container mx-auto px-2">
         <Routes>
@@ -96,6 +97,7 @@ function AppRoutes() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+      <MobileBottomNav />
       <Toaster position="top-right" />
     </div>
   );
