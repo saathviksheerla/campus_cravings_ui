@@ -1,16 +1,13 @@
 // src/pages/Login.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthenticationContext';
-import { login } from '../services/api';
 import toast from 'react-hot-toast';
 import AuthenticationLayout from '../components/layouts/AuthenticationLayout';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { user, login: authLogin } = useAuth();
-  const [formData, setFormData] = useState({ email: 'stu@clg.edu', password: '9441' });
-  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
 
   // Redirect if user is already logged in
   useEffect(() => {
@@ -19,67 +16,37 @@ export default function Login() {
     }
   }, [user, navigate]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const response = await login(formData);
-      authLogin(response.data.token, response.data.user);
-      toast.success('Welcome back!');
-      navigate('/menu');
-    } catch (error) {
-      toast.error(error.response?.data?.error || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
+  // Handle redirect to Google OAuth
+  const handleGoogleLogin = () => {
+    // Make sure REACT_APP_API_URL is defined or provide a fallback
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+    const redirectUrl = `${apiUrl}/auth/google`;
+    console.log('redirecting to:', redirectUrl);
+    window.location.href = redirectUrl;
   };
 
   return (
     <AuthenticationLayout 
-      title="Welcome Back" 
-      subtitle="Sign in to your account"
-      linkText="Don't have an account? Sign up"
-      linkUrl="/register"
+      title="Welcome to Campus Cravings" 
+      subtitle="Sign in or sign up with your Google account"
     >
-      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-primary">
-              Email Address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="mt-1 block w-full border-2 border-primary/10 rounded-md px-4 py-2 font-body focus:border-accent focus:ring-0"
-            />
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-primary">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="mt-1 block w-full border-2 border-primary/10 rounded-md px-4 py-2 font-body focus:border-accent focus:ring-0"
-            />
-          </div>
-        </div>
+      <div className="mt-8 space-y-6">
         <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-accent text-primary font-body font-medium py-3 rounded-md hover:bg-accent-dark transition-colors disabled:opacity-50"
+          onClick={handleGoogleLogin}
+          className="w-full flex items-center justify-center bg-white text-gray-700 border border-gray-300 rounded-md px-4 py-3 space-x-2 hover:bg-gray-50 transition-colors"
         >
-          {loading ? 'Signing in...' : 'Sign In'}
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24" height="24">
+            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" />
+            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" />
+            <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" />
+            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
+          </svg>
+          <span className="font-medium">Continue with Google</span>
         </button>
-      </form>
+        <p className="text-center text-sm text-gray-600 mt-4">
+          By continuing, you'll create an account if you don't already have one
+        </p>
+      </div>
     </AuthenticationLayout>
   );
 }

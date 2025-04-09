@@ -26,3 +26,32 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* Add this to your App.css */
+@media (max-width: 639px) {
+  body {
+    padding-bottom: 4rem; /* Space for mobile navigation */
+    overflow-x: hidden; /* Prevent horizontal scroll */
+  }
+  
+  /* Fix for Firefox */
+  @-moz-document url-prefix() {
+    .fixed {
+      position: fixed !important;
+    }
+    
+    /* Ensure bottom nav is always visible */
+    div[class*="fixed bottom-0"] {
+      transform: translateZ(0);
+      will-change: transform;
+      backface-visibility: hidden;
+    }
+  }
+}
+
+/* Force hardware acceleration for smoother performance */
+.fixed {
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+}

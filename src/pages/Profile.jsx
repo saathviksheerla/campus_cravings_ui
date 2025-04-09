@@ -27,14 +27,13 @@ export default function Profile() {
             <h3 className="text-sm font-medium text-primary/70">Email Address</h3>
             <p className="mt-2 font-body text-lg text-primary">{user?.email}</p>
           </div>
-          <div className="px-6 py-6">
-            <h3 className="text-sm font-medium text-primary/70">College ID</h3>
-            <p className="mt-2 font-body text-lg text-primary">{user?.collegeId}</p>
-          </div>
-          <div className="px-6 py-6">
-            <h3 className="text-sm font-medium text-primary/70">Account Type</h3>
-            <p className="mt-2 font-body text-lg text-primary capitalize">{user?.role}</p>
-          </div>
+
+          {user?.role === 'admin' && (
+            <div className="px-6 py-6">
+              <h3 className="text-sm font-medium text-primary/70">Account Type</h3>
+              <p className="mt-2 font-body text-lg text-primary capitalize">{user?.role}</p>
+            </div>
+          )}
           <div className="px-6 py-6">
             <button
               onClick={handleLogout}
