@@ -1,5 +1,6 @@
 // src/context/AuthenticationContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getCurrentUser } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -10,23 +11,33 @@ export const AuthenticationProvider = ({ children }) => {
   useEffect(() => {
     // Check if user is logged in on mount
     const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-
-    if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
+    
+    if (token) {
+      fetchUserData(token);
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
-  const login = (token, userData) => {
+  const fetchUserData = async (token) => {
+    try {
+      const response = await getCurrentUser(token);
+      setUser(response.data.user);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      logout(); // Clear invalid token
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = (token) => {
     localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
+    fetchUserData(token);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
     setUser(null);
   };
   

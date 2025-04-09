@@ -14,12 +14,8 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Auth
-export const register = (userData) => api.post('/auth/register', userData);
-export const login = (credentials) => api.post('/auth/login', credentials);
-
-// User
-export const getUserProfile = () => api.get('/users/me');
+// Auth - Google SSO endpoints
+export const getCurrentUser = () => api.get('/auth/me');
 
 // Menu
 export const getMenu = () => api.get('/menu');
@@ -32,5 +28,8 @@ export const createOrder = (orderData) => api.post('/orders', orderData);
 export const getOrders = () => api.get('/orders');
 export const getAdminOrders = () => api.get('/orders/admin/all');
 export const updateOrderStatus = (orderId, status) => api.put(`/orders/admin/${orderId}/status`, { status });
+
+// User
+export const getUserProfile = () => api.get('/users/me');
 
 export default api;
