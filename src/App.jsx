@@ -2,6 +2,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuth } from './context/AuthenticationContext';
 import { AuthenticationProvider } from './context/AuthenticationContext';
 import { CartProvider } from './context/CartContext';
@@ -15,7 +16,7 @@ import Cart from './pages/Cart';
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
-import Register from './pages/Register';
+import GoogleAuthCallback from './components/GoogleAuthCallback';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageMenu from './pages/admin/ManageMenu';
 import ManageOrders from './pages/admin/ManageOrders';
@@ -41,14 +42,14 @@ const ProtectedRoute = ({ children }) => {
 
 function AppRoutes() {
   return (
-    <div className="min-h-screen bg-gray-100 pb-16 sm:pb-0">
+    <div className="min-h-screen bg-gray-100">
       <Navbar />
-      <main className="container mx-auto px-2">
+      <main className="container mx-auto px-2 pb-20 sm:pb-0">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
           <Route
             path="/cart"
             element={<Cart />}
@@ -104,15 +105,19 @@ function AppRoutes() {
 }
 
 function App() {
+  const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+  
   return (
     <ErrorBoundary>
-      <AuthenticationProvider>
-        <CartProvider>
-          <Router>
-            <AppRoutes />
-          </Router>
-        </CartProvider>
-      </AuthenticationProvider>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <AuthenticationProvider>
+          <CartProvider>
+            <Router>
+              <AppRoutes />
+            </Router>
+          </CartProvider>
+        </AuthenticationProvider>
+      </GoogleOAuthProvider>
     </ErrorBoundary>
   );
 }

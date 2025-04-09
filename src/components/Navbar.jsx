@@ -10,7 +10,7 @@ export default function Navbar() {
   const cartItemsCount = getCartItemsCount();
 
   return (
-    <nav className="sticky top-0 z-50 bg-primary/90 text-secondary backdrop-blur-lg">
+    <nav className="sticky top-0 z-[1000] bg-primary/90 text-secondary backdrop-blur-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-14">
           {/* App Logo/Name - Always visible on all screens */}
