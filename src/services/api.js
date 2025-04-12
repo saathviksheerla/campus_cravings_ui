@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3000/api'
+  baseURL: process.env.REACT_APP_API_URL
 });
 
 // Add auth token to requests
@@ -17,6 +17,15 @@ api.interceptors.request.use((config) => {
 // Auth - Google SSO endpoints
 export const getCurrentUser = () => api.get('/auth/me');
 
+// Phone verification
+export const updatePhone = (data) => api.post('/phone/update', data);
+export const verifyPhone = (data) => api.post('/phone/verify', data);
+export const checkPhoneStatus = () => api.get('/phone/status');
+
+// Profile
+export const getUserProfile = () => api.get('/user/profile');
+export const updateUsername = (data) => api.post('/user/update-username', data);
+
 // Menu
 export const getMenu = () => api.get('/menu');
 export const createMenuItem = (data) => api.post('/menu', data);
@@ -28,8 +37,5 @@ export const createOrder = (orderData) => api.post('/orders', orderData);
 export const getOrders = () => api.get('/orders');
 export const getAdminOrders = () => api.get('/orders/admin/all');
 export const updateOrderStatus = (orderId, status) => api.put(`/orders/admin/${orderId}/status`, { status });
-
-// User
-export const getUserProfile = () => api.get('/users/me');
 
 export default api;

@@ -1,9 +1,9 @@
 // src/pages/Cart.jsx
-import React, {useState} from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthenticationContext';
-import { createOrder } from '../services/api';
+import { createOrder, checkPhoneStatus } from '../services/api';
 import toast from 'react-hot-toast';
 
 export default function Cart() {
@@ -11,6 +11,27 @@ export default function Cart() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+
+  // Check phone verification status when component mounts and when user changes
+  useEffect(() => {
+    const checkVerification = async () => {
+      if (!user) return;
+      
+      try {
+        setIsCheckingStatus(true);
+        const response = await checkPhoneStatus();
+        setIsPhoneVerified(response.data.isPhoneVerified);
+      } catch (error) {
+        console.error('Error checking phone verification:', error);
+      } finally {
+        setIsCheckingStatus(false);
+      }
+    };
+    
+    checkVerification();
+  }, [user]);
 
   const handleQuantityChange = (item, newQuantity) => {
     updateQuantity(item._id, parseInt(newQuantity));
@@ -20,6 +41,13 @@ export default function Cart() {
     if (!user) {
       toast.error('Please login to place an order');
       navigate('/login');
+      return;
+    }
+
+    // Check phone verification status before placing order
+    if (!isPhoneVerified) {
+      toast.error('Phone verification required before placing orders');
+      navigate('/profile');
       return;
     }
 
@@ -41,7 +69,14 @@ export default function Cart() {
       navigate('/orders');
     } catch (error) {
       console.error('Order error:', error);
-      toast.error(error.response?.data?.error || 'Failed to place order');
+      
+      // Special handling for verification errors
+      if (error.response?.data?.verificationNeeded) {
+        toast.error('Phone verification required before placing orders');
+        navigate('/profile');
+      } else {
+        toast.error(error.response?.data?.error || 'Failed to place order');
+      }
     } finally {
       setIsPlacingOrder(false);
     }
@@ -67,6 +102,29 @@ export default function Cart() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="font-display text-3xl font-bold text-primary">Your Cart</h1>
+      
+      {/* Show phone verification warning if user is logged in but phone is not verified */}
+      {user && !isCheckingStatus && !isPhoneVerified && (
+        <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div className="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <p className="font-medium text-yellow-700">
+              Phone verification required for placing orders
+            </p>
+          </div>
+          <p className="mt-1 ml-7 text-sm text-yellow-600">
+            You must verify your phone number before you can place orders.
+          </p>
+          <button
+            onClick={() => navigate('/profile')}
+            className="mt-2 ml-7 text-indigo-600 hover:text-indigo-800 text-sm font-medium"
+          >
+            Verify Now →
+          </button>
+        </div>
+      )}
       
       <div className="mt-8 space-y-6">
         {cartItems.map(item => (
@@ -158,11 +216,19 @@ export default function Cart() {
           
           <button
             onClick={handlePlaceOrder}
-            disabled={isPlacingOrder}
+            disabled={isPlacingOrder || (user && !isPhoneVerified)}
             className="mt-6 w-full py-3 bg-accent text-primary font-body font-medium rounded-md hover:bg-accent-dark transition-colors disabled:opacity-50"
           >
-            {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
+            {isPlacingOrder ? 'Placing Order...' : 
+             (user && !isPhoneVerified) ? 'Phone Verification Required' : 
+             'Place Order'}
           </button>
+          
+          {user && !isPhoneVerified && (
+            <p className="mt-2 text-center text-sm text-red-600">
+              Please verify your phone number in your profile before placing an order
+            </p>
+          )}
         </div>
       </div>
     </div>
