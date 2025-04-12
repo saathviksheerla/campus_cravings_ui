@@ -11,7 +11,6 @@ export const AuthenticationProvider = ({ children }) => {
   useEffect(() => {
     // Check if user is logged in on mount
     const token = localStorage.getItem('token');
-    
     if (token) {
       fetchUserData(token);
     } else {
@@ -40,13 +39,19 @@ export const AuthenticationProvider = ({ children }) => {
     localStorage.removeItem('token');
     setUser(null);
   };
-  
+
+  // Add method to update user in context
+  const updateUserInContext = (updatedUser) => {
+    setUser(updatedUser);
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
       loading,
       login,
       logout,
+      updateUserInContext, // Add the new method to the context
       isAdmin: user?.role === 'admin'
     }}>
       {children}
