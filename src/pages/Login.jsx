@@ -19,9 +19,8 @@ export default function Login() {
   // Handle redirect to Google OAuth
   const handleGoogleLogin = () => {
     // Make sure REACT_APP_API_URL is defined or provide a fallback
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+    const apiUrl = process.env.REACT_APP_API_URL;
     const redirectUrl = `${apiUrl}/auth/google`;
-    console.log('redirecting to:', redirectUrl);
     window.location.href = redirectUrl;
   };
 
