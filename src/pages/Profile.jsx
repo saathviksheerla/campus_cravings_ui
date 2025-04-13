@@ -1,5 +1,5 @@
 // src/pages/Profile.jsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthenticationContext';
 import axios from 'axios'; // Make sure axios is installed
@@ -27,7 +27,7 @@ export default function Profile() {
 
   const handleSubmitUsername = async (e) => {
     e.preventDefault();
-    
+
     if (!username) {
       setError('Username cannot be empty');
       return;
@@ -41,11 +41,11 @@ export default function Profile() {
     try {
       setIsLoading(true);
       setError('');
-      
+
       const token = localStorage.getItem('token');
-      const response = await axios.post(`${baseURL}/user/update-username`, 
+      const response = await axios.post(`${baseURL}/user/update-username`,
         { username },
-        { 
+        {
           headers: {
             Authorization: `Bearer ${token}`
           },
@@ -56,10 +56,10 @@ export default function Profile() {
       if (response.data.user) {
         updateUserInContext(response.data.user);
       }
-      
+
       setSuccessMessage('Username updated successfully');
       setIsEditingUsername(false);
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => {
         setSuccessMessage('');
@@ -92,7 +92,7 @@ export default function Profile() {
                 </button>
               )}
             </div>
-            
+
             {isEditingUsername ? (
               <form onSubmit={handleSubmitUsername} className="mt-2">
                 <div className="flex flex-col space-y-3">
@@ -139,10 +139,12 @@ export default function Profile() {
           </div>
 
           {/* Mobile Number Section */}
-          <div className="px-6 py-6">
-            <h3 className="text-sm font-medium text-primary/70">Phone Number</h3>
-            <p className="mt-2 font-body text-lg text-primary">{user?.phone}</p>
-          </div>
+          {user?.phone && (
+            <div className="px-6 py-6">
+              <h3 className="text-sm font-medium text-primary/70">Phone Number</h3>
+              <p className="mt-2 font-body text-lg text-primary">{user?.phone}</p>
+            </div>
+          )}
 
           {/* Email Address Section */}
           <div className="px-6 py-6">
