@@ -92,14 +92,14 @@ export default function GoogleAuthCallback() {
     return null;
   }
 
-  if (showVerification) {
+  if (showVerification && user?.isPhoneVerified === false) {
     return (
       <div className="container mx-auto max-w-md mt-12">
         <h1 className="text-2xl font-bold mb-6 text-center">Verify Your Phone Number</h1>
         <p className="mb-6 text-gray-600 text-center">
           To order food, please verify your phone number. You can skip this step for now but you'll need to verify before placing orders.
         </p>
-        <PhoneVerification onComplete={handleVerificationComplete} canSkip={true} />
+        <PhoneVerification onComplete={handleVerificationComplete} canSkip={false} />
       </div>
     );
   }
