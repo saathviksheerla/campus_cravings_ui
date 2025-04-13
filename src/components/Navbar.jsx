@@ -45,7 +45,7 @@ export default function Navbar() {
             <div className="hidden sm:flex sm:items-center">
               <div className="flex items-center space-x-8">
                 <Link to="/cart" className="relative text-secondary hover:text-accent transition-colors">
-                <span className="text-secondary hover:text-accent transition-colors">Cart</span>
+                  <span className="text-secondary hover:text-accent transition-colors">Cart</span>
                   {cartItemsCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-accent text-primary text-xs rounded-full h-5 w-5 flex items-center justify-center">
                       {cartItemsCount}
@@ -58,12 +58,24 @@ export default function Navbar() {
               </div>
             </div>
           ) : (
-            <Link
-              to="/login"
-              className="m-2 px-4 py-2 w-fit h-fit border border-accent text-accent hover:bg-accent hover:text-primary transition-colors"
-            >
-              Login
-            </Link>
+            <div className="hidden sm:flex sm:items-center">
+              <div className="flex items-center space-x-8">
+                <Link to="/cart" className="relative text-secondary hover:text-accent transition-colors">
+                  <span className="text-secondary hover:text-accent transition-colors">Cart</span>
+                  {cartItemsCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-accent text-primary text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {cartItemsCount}
+                    </span>
+                  )}
+                </Link>
+                <Link
+                  to="/login"
+                  className="m-2 px-4 py-2 w-fit h-fit border border-accent text-accent hover:bg-accent hover:text-primary transition-colors"
+                >
+                  Login
+                </Link>
+              </div>
+            </div>
           )}
         </div>
       </div>

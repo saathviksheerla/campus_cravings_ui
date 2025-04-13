@@ -4,6 +4,9 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthenticationContext';
 import { useCart } from '../context/CartContext';
 import { getMenu, createOrder } from '../services/api';
+import { useNavigate } from 'react-router-dom';
+
+const baseURL = process.env.REACT_APP_API_URL;
 
 function MenuItem({ item, onOrder, onEdit, isAdmin }) {
   const { addToCart } = useCart();
@@ -82,6 +85,7 @@ export default function Menu() {
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -107,6 +111,7 @@ export default function Menu() {
   const handleOrder = async (item) => {
     if (!user) {
       toast.error('Please login to place an order');
+      navigate('/login');
       return;
     }
 
