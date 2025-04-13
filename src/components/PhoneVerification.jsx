@@ -11,9 +11,6 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
   const [verificationCode, setVerificationCode] = useState('');
   const [confirmationResult, setConfirmationResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [useEmailVerification, setUseEmailVerification] = useState(false);
-  const [email, setEmail] = useState('');
-  const [emailCode, setEmailCode] = useState('');
   
   useEffect(() => {
     // Check if user already has a phone number
@@ -31,7 +28,7 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
     checkPhone();
     
     // Setup recaptcha when component mounts
-    if (!useEmailVerification && typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
       setupRecaptcha();
     }
     
@@ -42,7 +39,7 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
         window.recaptchaVerifier = null;
       }
     };
-  }, [useEmailVerification]);
+  }, []);
   
   const setupRecaptcha = () => {
     if (!window.recaptchaVerifier) {
@@ -61,12 +58,6 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
   const handleSendCode = async (e) => {
     e.preventDefault();
     
-    if (useEmailVerification) {
-      // Handle email verification logic
-      handleSendEmailCode();
-      return;
-    }
-    
     if (!phone || phone.length < 10) {
       toast.error('Please enter a valid phone number');
       return;
@@ -80,7 +71,6 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
       
       // Format phone number for Firebase (add country code if needed)
       const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`; // Assuming India (+91)
-      console.log('Formatted Phone:', formattedPhone);
       
       // Send verification code
       const confirmation = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
@@ -90,12 +80,6 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
     } catch (error) {
       console.error('Error sending code:', error);
       toast.error(error.message || 'Failed to send verification code');
-      
-      // Suggest email verification if billing error
-      if (error.code === 'auth/billing-not-enabled') {
-        toast.error('SMS verification unavailable. Try email verification instead.');
-        setUseEmailVerification(true);
-      }
       
       // Reset recaptcha on error
       if (window.recaptchaVerifier) {
@@ -108,41 +92,8 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
     }
   };
   
-  const handleSendEmailCode = async () => {
-    if (!email || !email.includes('@')) {
-      toast.error('Please enter a valid email address');
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      
-      // In a real app, you'd call an API to send email with verification code
-      // Here we'll simulate it with a mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // For demo, we'll just set a dummy code - in production, this would be generated server-side
-      const dummyCode = '123456';
-      console.log('Email verification code (for demo):', dummyCode);
-      
-      setStep('verify');
-      toast.success('Verification code sent to your email!');
-    } catch (error) {
-      console.error('Error sending email code:', error);
-      toast.error(error.message || 'Failed to send email verification code');
-    } finally {
-      setLoading(false);
-    }
-  };
-  
   const handleVerifyCode = async (e) => {
     e.preventDefault();
-    
-    if (useEmailVerification) {
-      // Handle email verification code logic
-      handleVerifyEmailCode();
-      return;
-    }
     
     if (!verificationCode || verificationCode.length !== 6) {
       toast.error('Please enter a valid 6-digit verification code');
@@ -175,66 +126,24 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
     }
   };
   
-  const handleVerifyEmailCode = async () => {
-    if (!emailCode || emailCode.length !== 6) {
-      toast.error('Please enter a valid 6-digit verification code');
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      
-      // In production, you would verify this code with your backend
-      // For demo purposes, we'll accept code 123456
-      if (emailCode === '123456') {
-        // Update verification status in our database
-        await verifyPhone({
-          phone: email, // Store email instead of phone
-          verified: true
-        });
-        
-        setStep('success');
-        toast.success('Email verified successfully!');
-        
-        if (onComplete) {
-          onComplete();
-        }
-      } else {
-        throw new Error('Invalid verification code');
-      }
-    } catch (error) {
-      console.error('Error verifying email code:', error);
-      toast.error(error.message || 'Invalid verification code');
-    } finally {
-      setLoading(false);
-    }
-  };
-  
   const handleSkip = () => {
     if (onComplete) {
       onComplete();
     }
   };
   
-  const toggleVerificationMethod = () => {
-    setUseEmailVerification(!useEmailVerification);
-    setStep('input');
-    setVerificationCode('');
-    setEmailCode('');
-  };
-  
   if (step === 'success') {
     return (
       <div className="bg-green-50 p-4 rounded-md">
-        <div className="flex">
+        <div className="flex items-center">
           <div className="flex-shrink-0">
-            <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <svg className="h-5 w-5 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
             </svg>
           </div>
           <div className="ml-3">
             <p className="text-sm font-medium text-green-800">
-              {useEmailVerification ? 'Email' : 'Phone number'} verified successfully!
+              Phone number verified successfully!
             </p>
           </div>
         </div>
@@ -243,67 +152,54 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
   }
   
   return (
-    <div>
+    <div className="max-w-md mx-auto p-4 sm:p-6">
       {step === 'input' && (
         <form onSubmit={handleSendCode} className="space-y-4">
           <div>
-            <label htmlFor={useEmailVerification ? "email" : "phone"} className="block text-sm font-medium text-primary">
-              {useEmailVerification ? 'Email Address' : 'Phone Number'}
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+              Phone Number
             </label>
             <div className="mt-1">
-              {useEmailVerification ? (
-                <input
-                  type="email"
-                  id="email"
-                  placeholder="Enter your email address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full px-3 py-2 border border-primary/20 rounded-md shadow-sm focus:ring-accent focus:border-accent font-body"
-                  disabled={loading}
-                  required
-                />
-              ) : (
-                <input
-                  type="tel"
-                  id="phone"
-                  placeholder="Enter your phone number"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="block w-full px-3 py-2 border border-primary/20 rounded-md shadow-sm focus:ring-accent focus:border-accent font-body"
-                  disabled={loading}
-                  required
-                />
-              )}
+              <input
+                type="tel"
+                id="phone"
+                placeholder="Enter your phone number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                disabled={loading}
+                required
+              />
             </div>
-            <p className="mt-1 text-sm text-primary/70">
-              We'll send a verification code to this {useEmailVerification ? 'email' : 'number'}
+            <p className="mt-1 text-sm text-gray-500">
+              We'll send a verification code to this number
             </p>
           </div>
           
-          {!useEmailVerification && <div id="recaptcha-container"></div>}
+          <div id="recaptcha-container" className="mt-2"></div>
           
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-accent text-primary font-body font-medium rounded-md hover:bg-accent-dark transition-colors disabled:opacity-50"
+              className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {loading ? 'Sending...' : 'Send Verification Code'}
-            </button>
-            
-            <button
-              type="button"
-              onClick={toggleVerificationMethod}
-              className="px-6 py-2 border border-primary/20 text-primary font-body font-medium rounded-md hover:bg-primary/5 transition-colors"
-            >
-              Use {useEmailVerification ? 'Phone' : 'Email'} Instead
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Sending...
+                </span>
+              ) : 'Send Verification Code'}
             </button>
             
             {canSkip && (
               <button
                 type="button"
                 onClick={handleSkip}
-                className="px-6 py-2 border border-primary/20 text-primary font-body font-medium rounded-md hover:bg-primary/5 transition-colors"
+                className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Skip for Now
               </button>
@@ -315,7 +211,7 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
       {step === 'verify' && (
         <form onSubmit={handleVerifyCode} className="space-y-4">
           <div>
-            <label htmlFor="code" className="block text-sm font-medium text-primary">
+            <label htmlFor="code" className="block text-sm font-medium text-gray-700">
               Verification Code
             </label>
             <div className="mt-1">
@@ -323,35 +219,40 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
                 type="text"
                 id="code"
                 placeholder="Enter 6-digit code"
-                value={useEmailVerification ? emailCode : verificationCode}
-                onChange={(e) => useEmailVerification 
-                  ? setEmailCode(e.target.value)
-                  : setVerificationCode(e.target.value)
-                }
-                className="block w-full px-3 py-2 border border-primary/20 rounded-md shadow-sm focus:ring-accent focus:border-accent font-body"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 maxLength={6}
                 disabled={loading}
                 required
               />
             </div>
-            <p className="mt-1 text-sm text-primary/70">
-              Enter the verification code sent to your {useEmailVerification ? 'email' : 'phone'}
+            <p className="mt-1 text-sm text-gray-500">
+              Enter the verification code sent to your phone
             </p>
           </div>
           
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-accent text-primary font-body font-medium rounded-md hover:bg-accent-dark transition-colors disabled:opacity-50"
+              className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {loading ? 'Verifying...' : 'Verify Code'}
+              {loading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Verifying...
+                </span>
+              ) : 'Verify Code'}
             </button>
             
             <button
               type="button"
               onClick={() => setStep('input')}
-              className="px-6 py-2 border border-primary/20 text-primary font-body font-medium rounded-md hover:bg-primary/5 transition-colors"
+              className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Back
             </button>
@@ -360,7 +261,7 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
               <button
                 type="button"
                 onClick={handleSkip}
-                className="px-6 py-2 border border-primary/20 text-primary font-body font-medium rounded-md hover:bg-primary/5 transition-colors"
+                className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Skip for Now
               </button>

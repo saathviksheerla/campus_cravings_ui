@@ -138,6 +138,12 @@ export default function Profile() {
             )}
           </div>
 
+          {/* Mobile Number Section */}
+          <div className="px-6 py-6">
+            <h3 className="text-sm font-medium text-primary/70">Phone Number</h3>
+            <p className="mt-2 font-body text-lg text-primary">{user?.phone}</p>
+          </div>
+
           {/* Email Address Section */}
           <div className="px-6 py-6">
             <h3 className="text-sm font-medium text-primary/70">Email Address</h3>

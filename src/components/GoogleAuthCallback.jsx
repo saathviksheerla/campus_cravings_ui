@@ -87,6 +87,11 @@ export default function GoogleAuthCallback() {
     );
   }
 
+  if(user?.isPhoneVerified){
+    handleVerificationComplete();
+    return null;
+  }
+
   if (showVerification) {
     return (
       <div className="container mx-auto max-w-md mt-12">
