@@ -21,6 +21,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageMenu from './pages/admin/ManageMenu';
 import ManageOrders from './pages/admin/ManageOrders';
 import './App.css';
+import NotificationService from './components/NotificationService';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -112,6 +113,8 @@ function App() {
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
         <AuthenticationProvider>
           <CartProvider>
+            <Toaster />
+            <NotificationService />
             <Router>
               <AppRoutes />
             </Router>
