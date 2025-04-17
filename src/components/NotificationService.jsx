@@ -6,6 +6,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 
 const NotificationService = () => {
+  const baseUrl = process.env.REACT_APP_API_URL;
   const { user } = useAuth();
   const [isTokenSaved, setIsTokenSaved] = useState(false);
 
@@ -15,7 +16,7 @@ const NotificationService = () => {
         const token = await requestNotificationPermission();
         if (token) {
           try {
-            await api.post('/user/fcm-token', { token });
+            await api.post(`${baseUrl}/user/fcm-token`, { token });
             setIsTokenSaved(true);
             console.log('FCM token saved to server');
           } catch (error) {
