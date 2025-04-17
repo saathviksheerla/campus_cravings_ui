@@ -83,7 +83,7 @@ export default function ManageOrders() {
               <div className="flex justify-between items-center">
                 <div>
                   <h3 className="font-display text-xl font-bold text-primary">
-                    Order #{order.pickupCode}
+                    Order #<span className="font-mono tracking-wider text-blue-700">{order.pickupCode}</span>
                   </h3>
                   <p className="mt-1 font-body text-sm text-primary/70">
                     {new Date(order.orderDate).toLocaleDateString('en-US', {
@@ -95,7 +95,7 @@ export default function ManageOrders() {
                     })}
                   </p>
                   <p className="mt-1 font-body text-sm text-primary/70">
-                    Customer: {order.userId?.name || 'Unknown'} ({order.userId?.email || 'No email'})
+                    Customer: {order.userId?.name || 'Unknown'}
                   </p>
                 </div>
                 <div className="px-4 py-2 bg-accent/10 rounded-full">

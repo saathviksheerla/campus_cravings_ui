@@ -94,9 +94,7 @@ export default function Menu() {
 
   const fetchMenu = async () => {
     try {
-      console.log('Fetching menu...');
       const response = await getMenu();
-      console.log('Menu response:', response);
       setMenuItems(response.data);
       setError(null);
     } catch (error) {
