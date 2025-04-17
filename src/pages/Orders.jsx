@@ -51,7 +51,7 @@ export default function Orders() {
               <div className="flex justify-between items-center">
                 <div>
                   <h3 className="font-display text-xl font-bold text-primary">
-                    Order #{order.pickupCode}
+                    Order #<span className="font-mono tracking-wider text-blue-700">{order.pickupCode}</span>
                   </h3>
                   <p className="mt-1 font-body text-sm text-primary/70">
                     {new Date(order.orderDate).toLocaleDateString('en-US', {

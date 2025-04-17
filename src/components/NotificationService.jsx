@@ -15,7 +15,6 @@ const NotificationService = () => {
         const token = await requestNotificationPermission();
         if (token) {
           try {
-            console.log(token);
             await api.post('/user/fcm-token', { token });
             setIsTokenSaved(true);
             console.log('FCM token saved to server');
@@ -50,7 +49,7 @@ const NotificationService = () => {
         );
         
         // Play sound
-        const audio = new Audio('/notification-sound.mp3'); // Add a sound file to your public folder
+        const audio = new Audio('/sizzle.mp3'); // Add a sound file to your public folder
         audio.play().catch(e => console.log('Error playing sound:', e));
       }
     });
