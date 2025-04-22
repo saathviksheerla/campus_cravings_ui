@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthenticationContext';
 import { useCart } from '../context/CartContext';
-import { getMenu, createOrder } from '../services/api';
+import { getMenu, createOrder, getCategories } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
 const baseURL = process.env.REACT_APP_API_URL;
@@ -66,36 +66,44 @@ function MenuItem({ item, onOrder, onEdit, isAdmin }) {
   );
 }
 
-function MenuSection({ title, items, onOrder }) {
-  if (items.length === 0) return null;
-
-  return (
-    <div className="mt-8">
-      <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
-      <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map(item => (
-          <MenuItem key={item._id} item={item} onOrder={onOrder} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default function Menu() {
   const [menuItems, setMenuItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeCategory, setActiveCategory] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { user } = useAuth();
 
   useEffect(() => {
-    fetchMenu();
+    fetchMenuAndCategories();
   }, []);
 
-  const fetchMenu = async () => {
+  useEffect(() => {
+    filterItems();
+  }, [menuItems, activeCategory, searchQuery]);
+
+  const fetchMenuAndCategories = async () => {
     try {
-      const response = await getMenu();
-      setMenuItems(response.data);
+      setLoading(true);
+      
+      // Fetch menu items
+      const menuResponse = await getMenu();
+      setMenuItems(menuResponse.data);
+      
+      // Fetch categories
+      try {
+        const categoriesResponse = await getCategories();
+        setCategories([...categoriesResponse.data]);
+      } catch (error) {
+        console.error('Categories fetch error:', error);
+        // Fallback to extracting categories from menu items
+        const uniqueCategories = [...new Set(menuResponse.data.map(item => item.category || ''))];
+        setCategories([ ...uniqueCategories.filter(cat => cat !== '')]);
+      }
+      
       setError(null);
     } catch (error) {
       console.error('Menu fetch error:', error);
@@ -103,6 +111,39 @@ export default function Menu() {
       toast.error('Failed to load menu');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const filterItems = () => {
+    let items = [...menuItems];
+    
+    // Filter by category
+    if (activeCategory) {
+      items = items.filter(item => 
+        activeCategory === 'Uncategorized' 
+          ? !item.category || item.category === ''
+          : item.category === activeCategory
+      );
+    }
+    
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      items = items.filter(item => 
+        item.name.toLowerCase().includes(query) || 
+        (item.description && item.description.toLowerCase().includes(query))
+      );
+    }
+    
+    setFilteredItems(items);
+  };
+
+  const handleCategoryClick = (category) => {
+    // If the current active category is clicked again, clear the filter
+    if (activeCategory === category) {
+      setActiveCategory(null);
+    } else {
+      setActiveCategory(category);
     }
   };
 
@@ -141,7 +182,7 @@ export default function Menu() {
         <h2 className="text-2xl font-semibold text-gray-900">Error Loading Menu</h2>
         <p className="mt-2 text-gray-600">{error}</p>
         <button
-          onClick={fetchMenu}
+          onClick={fetchMenuAndCategories}
           className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
         >
           Try Again
@@ -159,16 +200,8 @@ export default function Menu() {
     );
   }
 
-  const categorizedItems = menuItems.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = [];
-    }
-    acc[item.category].push(item);
-    return acc;
-  }, {});
-
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="text-center">
         <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
           Our Menu
@@ -178,14 +211,97 @@ export default function Menu() {
         </p>
       </div>
 
-      {Object.entries(categorizedItems).map(([category, items]) => (
-        <MenuSection
-          key={category}
-          title={category}
-          items={items}
-          onOrder={handleOrder}
-        />
-      ))}
+      {/* Search and Filter UI */}
+      <div className="mt-8">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+          {/* Search Bar */}
+          <div className="relative w-full md:w-64">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+            <input
+              type="text"
+              className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-accent focus:border-accent block w-full pl-10 p-2.5"
+              placeholder="Search menu items..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {/* Category Filters - Fixed for all screen sizes */}
+          <div className="w-full md:max-w-3xl">
+            <div className="flex flex-wrap gap-2">
+              {/* "All" button is now always visible and active when no category is selected */}
+              <button
+                onClick={() => setActiveCategory(null)}
+                className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap ${
+                  activeCategory === null
+                    ? 'bg-accent text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Super Menu
+              </button>
+              
+              {categories.map((category) => (
+                <button
+                  key={category || 'uncategorized'}
+                  onClick={() => handleCategoryClick(category)}
+                  className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap ${
+                    activeCategory === category
+                      ? 'bg-accent text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {category === '' ? '' : category}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Status Indicator */}
+      {activeCategory && (
+        <div className="mt-4 flex items-center">
+          <span className="text-sm text-gray-500">
+            Filtered by: <span className="font-medium text-accent">{activeCategory}</span>
+          </span>
+          <button 
+            onClick={() => setActiveCategory(null)}
+            className="ml-2 text-xs bg-gray-200 text-gray-700 rounded-full px-2 py-1 flex items-center"
+          >
+            Clear
+            <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* Menu Items Grid */}
+      <div className="mt-8">
+        {filteredItems.length === 0 ? (
+          <div className="text-center py-12">
+            <h2 className="text-xl font-semibold text-gray-700">No items found</h2>
+            <p className="mt-2 text-gray-500">Try changing your search or filter criteria</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredItems.map(item => (
+              <MenuItem 
+                key={item._id} 
+                item={item} 
+                onOrder={handleOrder}
+                isAdmin={user?.role === 'admin'}
+                onEdit={item => navigate(`/admin/menu-items/edit/${item._id}`)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
