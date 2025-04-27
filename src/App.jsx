@@ -107,13 +107,12 @@ function AppRoutes() {
 
 function App() {
   const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-  
+
   return (
     <ErrorBoundary>
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
         <AuthenticationProvider>
           <CartProvider>
-            <Toaster />
             <NotificationService />
             <Router>
               <AppRoutes />
