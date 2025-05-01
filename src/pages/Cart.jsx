@@ -101,7 +101,7 @@ export default function Cart() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="font-display text-3xl font-bold text-primary">Your Cart</h1>
+      <h1 className="font-display text-3xl font-bold text-accent-light">Your Cart</h1>
       
       {/* Show phone verification warning if user is logged in but phone is not verified */}
       {user && !isCheckingStatus && !isPhoneVerified && (
@@ -128,7 +128,7 @@ export default function Cart() {
       
       <div className="mt-8 space-y-6">
         {cartItems.map(item => (
-          <div key={item._id} className="bg-white shadow-elegant rounded-lg overflow-hidden">
+          <div key={item._id} className="bg-food-card-orange shadow-elegant rounded-lg overflow-hidden">
             <div className="p-6 flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
                 <img
@@ -137,9 +137,9 @@ export default function Cart() {
                   className="w-20 h-20 object-cover rounded-lg"
                 />
                 <div>
-                  <h3 className="font-display text-xl text-primary">{item.name}</h3>
-                  <p className="text-primary/70 font-body">{item.description}</p>
-                  <p className="font-body font-medium text-primary">₹{item.price}</p>
+                  <h3 className="font-display text-xl text-white">{item.name}</h3>
+                  <p className="text-white/70 font-body">{item.description}</p>
+                  <p className="font-body font-medium text-accent">₹{item.price}</p>
                 </div>
               </div>
               
@@ -156,7 +156,7 @@ export default function Cart() {
                     min="1"
                     value={item.quantity}
                     onChange={(e) => handleQuantityChange(item, e.target.value)}
-                    className="w-12 text-center border-y border-primary/10 py-1 font-body"
+                    className="w-12 bg-food-card-orange text-center border-y border-primary/10 py-1 font-body"
                   />
                   <button
                     onClick={() => handleQuantityChange(item, item.quantity + 1)}
@@ -166,13 +166,13 @@ export default function Cart() {
                   </button>
                 </div>
                 
-                <p className="font-body font-medium text-primary">
+                <p className="font-body font-medium text-accent">
                   ₹{(item.price * item.quantity).toFixed(2)}
                 </p>
                 
                 <button
                   onClick={() => removeFromCart(item._id)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-100 hover:text-red-300"
                 >
                   Remove
                 </button>

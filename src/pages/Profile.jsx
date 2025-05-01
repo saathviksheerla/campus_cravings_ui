@@ -73,15 +73,15 @@ export default function Profile() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="bg-white shadow-elegant rounded-lg overflow-hidden">
-        <div className="px-6 py-8 border-b border-primary/10">
-          <h1 className="font-display text-2xl font-bold text-primary">Profile Information</h1>
+      <div className="bg-primary shadow-elegant rounded-lg overflow-hidden">
+        <div className="px-6 py-8 border-b border-white/10">
+          <h1 className="font-display text-2xl font-bold text-white">Profile Information</h1>
         </div>
-        <div className="divide-y divide-primary/10">
+        <div className="divide-y divide-white/10">
           {/* Username Section with Edit Functionality */}
           <div className="px-6 py-6">
             <div className="flex justify-between items-center">
-              <h3 className="text-sm font-medium text-primary/70">Username</h3>
+              <h3 className="text-sm font-medium text-white/70">Username</h3>
               {!isEditingUsername && (
                 <button
                   type="button"
@@ -130,7 +130,7 @@ export default function Profile() {
               </form>
             ) : (
               <>
-                <p className="mt-2 font-body text-lg text-primary">{user?.name}</p>
+                <p className="mt-2 font-body text-lg text-white">{user?.name}</p>
                 {successMessage && (
                   <p className="mt-1 text-green-500 text-sm">{successMessage}</p>
                 )}
@@ -141,22 +141,22 @@ export default function Profile() {
           {/* Mobile Number Section */}
           {user?.phone && (
             <div className="px-6 py-6">
-              <h3 className="text-sm font-medium text-primary/70">Phone Number</h3>
-              <p className="mt-2 font-body text-lg text-primary">{user?.phone}</p>
+              <h3 className="text-sm font-medium text-white/70">Phone Number</h3>
+              <p className="mt-2 font-body text-lg text-white">{user?.phone}</p>
             </div>
           )}
 
           {/* Email Address Section */}
           <div className="px-6 py-6">
-            <h3 className="text-sm font-medium text-primary/70">Email Address</h3>
-            <p className="mt-2 font-body text-lg text-primary">{user?.email}</p>
+            <h3 className="text-sm font-medium text-white/70">Email Address</h3>
+            <p className="mt-2 font-body text-lg text-white">{user?.email}</p>
           </div>
 
           {/* Account Type Section (for admins) */}
           {user?.role === 'admin' && (
             <div className="px-6 py-6">
-              <h3 className="text-sm font-medium text-primary/70">Account Type</h3>
-              <p className="mt-2 font-body text-lg text-primary capitalize">{user?.role}</p>
+              <h3 className="text-sm font-medium text-white/70">Account Type</h3>
+              <p className="mt-2 font-body text-lg text-white capitalize">{user?.role}</p>
             </div>
           )}
 
