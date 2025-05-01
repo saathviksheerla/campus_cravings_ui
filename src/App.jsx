@@ -43,7 +43,7 @@ const ProtectedRoute = ({ children }) => {
 
 function AppRoutes() {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-primary">
       <Navbar />
       <main className="container mx-auto px-2 pb-20 sm:pb-0">
         <Routes>
@@ -107,13 +107,12 @@ function AppRoutes() {
 
 function App() {
   const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-  
+
   return (
     <ErrorBoundary>
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
         <AuthenticationProvider>
           <CartProvider>
-            <Toaster />
             <NotificationService />
             <Router>
               <AppRoutes />

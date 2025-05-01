@@ -6,6 +6,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 
 const NotificationService = () => {
+  const baseUrl = process.env.REACT_APP_API_URL;
   const { user } = useAuth();
   const [isTokenSaved, setIsTokenSaved] = useState(false);
 
@@ -15,8 +16,7 @@ const NotificationService = () => {
         const token = await requestNotificationPermission();
         if (token) {
           try {
-            console.log(token);
-            await api.post('/user/fcm-token', { token });
+            await api.post(`${baseUrl}/user/fcm-token`, { token });
             setIsTokenSaved(true);
             console.log('FCM token saved to server');
           } catch (error) {
@@ -50,7 +50,7 @@ const NotificationService = () => {
         );
         
         // Play sound
-        const audio = new Audio('/notification-sound.mp3'); // Add a sound file to your public folder
+        const audio = new Audio('/sizzle.mp3'); // Add a sound file to your public folder
         audio.play().catch(e => console.log('Error playing sound:', e));
       }
     });

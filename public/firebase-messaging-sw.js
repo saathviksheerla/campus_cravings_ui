@@ -20,8 +20,8 @@ messaging.onBackgroundMessage((payload) => {
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
     body: payload.notification.body,
-    icon: '/logo192.png', // Add your logo in public folder
-    badge: '/badge-icon.png', // Add a badge icon in public folder
+    icon: '/logo.jpg', // Add your logo in public folder
+    badge: '/favicon.ico', // Add a badge icon in public folder
     data: payload.data,
     actions: [
       {
