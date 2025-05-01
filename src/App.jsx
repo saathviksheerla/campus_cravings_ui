@@ -43,7 +43,7 @@ const ProtectedRoute = ({ children }) => {
 
 function AppRoutes() {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-primary">
       <Navbar />
       <main className="container mx-auto px-2 pb-20 sm:pb-0">
         <Routes>
