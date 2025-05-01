@@ -9,10 +9,6 @@ import { useNavigate } from 'react-router-dom';
 const baseURL = process.env.REACT_APP_API_URL;
 
 function MenuItem({ item, onOrder, onEdit, isAdmin }) {
-  const { addToCart, updateQuantity, cartItems } = useCart();
-
-  const cartItem = cartItems.find(ci => ci._id === item._id);
-  const quantity = cartItem ? cartItem.quantity : 0;
   const { addToCart } = useCart();
   const [cardColor] = useState(() => {
     // Randomly pick between food card colors for variety
@@ -47,7 +43,6 @@ function MenuItem({ item, onOrder, onEdit, isAdmin }) {
             </p>
           </div>
         </div>
-
         {isAdmin ? (
           <button
             onClick={() => onEdit(item)}
@@ -56,33 +51,13 @@ function MenuItem({ item, onOrder, onEdit, isAdmin }) {
             Edit Item
           </button>
         ) : (
-          <div className="mt-6 flex gap-2">
-            {quantity > 0 ? (
-             <div className="flex items-center justify-between border border-accent rounded-md w-full px-3 py-1.5">
-             <button
-               onClick={() => updateQuantity(item._id, quantity - 1)}
-               className="text-base font-bold text-accent hover:text-accent-dark px-2 py-1"
-             >
-               –
-             </button>
-             <span className="text-base font-medium">{quantity}</span>
-             <button
-               onClick={() => updateQuantity(item._id, quantity + 1)}
-               className="text-base font-bold text-accent hover:text-accent-dark px-2 py-1"
-             >
-               +
-             </button>
-           </div>
-           
-            ) : (
-              <button
-                onClick={handleAddToCart}
-                className="w-1/2 py-1.5 px-2 text-sm bg-accent text-primary font-body font-medium rounded hover:bg-accent-dark transition-colors"
-              >
-                Add to Cart
-              </button>
-            )}
-
+          <div className="p-4 pt-0 flex gap-2">
+            <button
+              onClick={handleAddToCart}
+              className="flex-1 py-3 bg-accent text-primary font-body font-medium rounded-md hover:bg-accent-dark transition-colors"
+            >
+              Add to Cart
+            </button>
             <button
               onClick={() => onOrder(item)}
               className="flex-1 py-3 border border-accent text-accent font-body font-medium rounded-md hover:bg-accent/10 transition-colors"
@@ -136,6 +111,7 @@ export default function Menu() {
       
       setError(null);
     } catch (error) {
+      console.error('Menu fetch error:', error);
       setError(error.response?.data?.error || 'Failed to load menu');
       toast.error('Failed to load menu');
     } finally {
@@ -185,10 +161,14 @@ export default function Menu() {
 
     try {
       await createOrder({
-        items: [{ menuItemId: item._id, quantity: 1 }]
+        items: [{
+          menuItemId: item._id,
+          quantity: 1
+        }]
       });
       toast.success('Order placed successfully!');
     } catch (error) {
+      console.error('Order error:', error);
       toast.error(error.response?.data?.error || 'Failed to place order');
     }
   };

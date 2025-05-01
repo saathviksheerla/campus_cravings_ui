@@ -9,105 +9,150 @@ export const CartProvider = ({ children }) => {
   const { user } = useAuth();
   const [cartItems, setCartItems] = useState([]);
   const [isCartLoaded, setIsCartLoaded] = useState(false);
-
+  
+  // Load cart from localStorage on component mount or when user changes
   useEffect(() => {
     const loadCart = () => {
-      const key = user ? `${CART_STORAGE_KEY}-${user._id}` : `${CART_STORAGE_KEY}-guest`;
-      const savedCart = localStorage.getItem(key);
-      if (savedCart) {
+      if (user) {
         try {
-          setCartItems(JSON.parse(savedCart));
-        } catch (e) {
-          console.error('Error parsing cart data:', e);
+          const savedCart = localStorage.getItem(`${CART_STORAGE_KEY}-${user._id}`);
+          if (savedCart) {
+            setCartItems(JSON.parse(savedCart));
+          } else {
+            setCartItems([]);
+          }
+        } catch (error) {
+          console.error('Error parsing cart data', error);
           setCartItems([]);
         }
       } else {
-        setCartItems([]);
+        // For guest users or when no user is logged in
+        try {
+          const guestCart = localStorage.getItem(`${CART_STORAGE_KEY}-guest`);
+          if (guestCart) {
+            setCartItems(JSON.parse(guestCart));
+          } else {
+            setCartItems([]);
+          }
+        } catch (error) {
+          console.error('Error parsing guest cart data', error);
+          setCartItems([]);
+        }
       }
       setIsCartLoaded(true);
     };
+
     loadCart();
   }, [user]);
-
+  
+  // Save cart to localStorage whenever it changes
   useEffect(() => {
+    // Only save cart after initial load to prevent overwriting with empty array
     if (isCartLoaded) {
-      const key = user ? `${CART_STORAGE_KEY}-${user._id}` : `${CART_STORAGE_KEY}-guest`;
-      localStorage.setItem(key, JSON.stringify(cartItems));
+      if (user) {
+        localStorage.setItem(`${CART_STORAGE_KEY}-${user._id}`, JSON.stringify(cartItems));
+      } else {
+        localStorage.setItem(`${CART_STORAGE_KEY}-guest`, JSON.stringify(cartItems));
+      }
     }
   }, [cartItems, user, isCartLoaded]);
-
+  
+  // Transfer guest cart to user cart on login
   useEffect(() => {
     if (user && isCartLoaded) {
       const guestCart = localStorage.getItem(`${CART_STORAGE_KEY}-guest`);
       if (guestCart && guestCart !== '[]') {
         const guestCartItems = JSON.parse(guestCart);
+        // Merge with any existing user cart
         const userCart = localStorage.getItem(`${CART_STORAGE_KEY}-${user._id}`);
-        let mergedCart = guestCartItems;
         if (userCart) {
           const userCartItems = JSON.parse(userCart);
-          mergedCart = [...userCartItems];
+          // Merge logic - add guest items to user cart
+          const mergedCart = [...userCartItems];
+          
           guestCartItems.forEach(guestItem => {
-            const existing = mergedCart.find(i => i._id === guestItem._id);
-            if (existing) {
-              existing.quantity += guestItem.quantity;
+            const existingItemIndex = mergedCart.findIndex(item => item._id === guestItem._id);
+            if (existingItemIndex !== -1) {
+              // Update quantity if item already exists
+              mergedCart[existingItemIndex].quantity += guestItem.quantity;
             } else {
+              // Add new item
               mergedCart.push(guestItem);
             }
           });
+          
+          setCartItems(mergedCart);
+        } else {
+          // No existing user cart, just use guest cart
+          setCartItems(guestCartItems);
         }
-        setCartItems(mergedCart);
+        
+        // Clear guest cart
         localStorage.removeItem(`${CART_STORAGE_KEY}-guest`);
       }
     }
   }, [user, isCartLoaded]);
-
+  
   const addToCart = (item, quantity = 1) => {
-    setCartItems(prev => {
-      const existing = prev.find(i => i._id === item._id);
-      if (existing) {
-        return prev.map(i =>
+    setCartItems(prevItems => {
+      const existingItem = prevItems.find(i => i._id === item._id);
+      
+      if (existingItem) {
+        // If item already exists, update quantity
+        return prevItems.map(i => 
           i._id === item._id ? { ...i, quantity: i.quantity + quantity } : i
         );
       } else {
-        return [...prev, { ...item, quantity }];
+        // Otherwise add new item
+        return [...prevItems, { ...item, quantity }];
       }
     });
   };
-
+  
   const removeFromCart = (itemId) => {
-    setCartItems(prev => prev.filter(item => item._id !== itemId));
+    setCartItems(prevItems => prevItems.filter(item => item._id !== itemId));
   };
-
+  
   const updateQuantity = (itemId, quantity) => {
-    setCartItems(prev =>
-      quantity <= 0
-        ? prev.filter(i => i._id !== itemId)
-        : prev.map(i => (i._id === itemId ? { ...i, quantity } : i))
+    if (quantity <= 0) {
+      removeFromCart(itemId);
+      return;
+    }
+    
+    setCartItems(prevItems => 
+      prevItems.map(item => 
+        item._id === itemId ? { ...item, quantity } : item
+      )
     );
   };
-
+  
   const clearCart = () => {
     setCartItems([]);
-    const key = user ? `${CART_STORAGE_KEY}-${user._id}` : `${CART_STORAGE_KEY}-guest`;
-    localStorage.removeItem(key);
+    if (user) {
+      localStorage.removeItem(`${CART_STORAGE_KEY}-${user._id}`);
+    } else {
+      localStorage.removeItem(`${CART_STORAGE_KEY}-guest`);
+    }
   };
-
-  const getCartTotal = () => cartItems.reduce((t, i) => t + i.price * i.quantity, 0);
-
-  const getCartItemsCount = () => cartItems.reduce((t, i) => t + i.quantity, 0);
-
+  
+  const getCartTotal = () => {
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+  
+  const getCartItemsCount = () => {
+    return cartItems.reduce((count, item) => count + item.quantity, 0);
+  };
+  
   return (
-    <CartContext.Provider
-      value={{
-        cartItems,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        getCartTotal,
-        getCartItemsCount
-      }}
-    >
+    <CartContext.Provider value={{
+      cartItems,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart,
+      getCartTotal,
+      getCartItemsCount
+    }}>
       {children}
     </CartContext.Provider>
   );
