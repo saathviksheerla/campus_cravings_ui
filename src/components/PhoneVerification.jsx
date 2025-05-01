@@ -1,5 +1,5 @@
 // src/components/PhoneVerification.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { auth } from '../firebase/config';
 import { updatePhone, verifyPhone, checkPhoneStatus } from '../services/api';
@@ -11,6 +11,9 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
   const [verificationCode, setVerificationCode] = useState('');
   const [confirmationResult, setConfirmationResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [recaptchaInitialized, setRecaptchaInitialized] = useState(false);
+  const recaptchaContainerRef = useRef(null);
+  const recaptchaVerifierRef = useRef(null);
   
   useEffect(() => {
     // Check if user already has a phone number
@@ -27,31 +30,67 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
     
     checkPhone();
     
-    // Setup recaptcha when component mounts
-    if (typeof window !== 'undefined') {
-      setupRecaptcha();
-    }
-    
-    // Cleanup recaptcha when component unmounts
+    // Setup recaptcha only once when component mounts and is visible in DOM
     return () => {
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
+      // Cleanup recaptcha when component unmounts
+      if (recaptchaVerifierRef.current) {
+        try {
+          recaptchaVerifierRef.current.clear();
+        } catch (error) {
+          console.error('Error clearing reCAPTCHA:', error);
+        }
+        recaptchaVerifierRef.current = null;
       }
     };
   }, []);
+
+  // Initialize recaptcha when the component is visible
+  useEffect(() => {
+    if (step === 'input' && !recaptchaInitialized && recaptchaContainerRef.current) {
+      // Small delay to ensure DOM is ready
+      const timer = setTimeout(() => {
+        setupRecaptcha();
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [step, recaptchaInitialized]);
   
   const setupRecaptcha = () => {
-    if (!window.recaptchaVerifier) {
-      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-        'size': 'normal',
-        'callback': () => {
-          // reCAPTCHA solved
-        },
-        'expired-callback': () => {
-          toast.error('reCAPTCHA expired. Please try again.');
-        }
-      });
+    try {
+      // Clear any existing instance first
+      if (recaptchaVerifierRef.current) {
+        recaptchaVerifierRef.current.clear();
+        recaptchaVerifierRef.current = null;
+      }
+      
+      // Only initialize if the container exists in DOM
+      if (recaptchaContainerRef.current) {
+        // Create a new RecaptchaVerifier
+        recaptchaVerifierRef.current = new RecaptchaVerifier(auth, recaptchaContainerRef.current, {
+          'size': 'normal',
+          'callback': () => {
+            console.log('reCAPTCHA solved successfully');
+            setRecaptchaInitialized(true);
+          },
+          'expired-callback': () => {
+            console.log('reCAPTCHA expired');
+            toast.error('reCAPTCHA expired. Please refresh and try again.');
+            setRecaptchaInitialized(false);
+          }
+        });
+        
+        // Render the reCAPTCHA
+        recaptchaVerifierRef.current.render().then(() => {
+          setRecaptchaInitialized(true);
+        }).catch(error => {
+          console.error('Error rendering reCAPTCHA:', error);
+          toast.error('Failed to initialize verification. Please refresh the page.');
+        });
+      }
+    } catch (error) {
+      console.error('Error setting up reCAPTCHA:', error);
+      toast.error('Error setting up verification. Please refresh the page.');
     }
   };
   
@@ -60,6 +99,11 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
     
     if (!phone || phone.length < 10) {
       toast.error('Please enter a valid phone number');
+      return;
+    }
+    
+    if (!recaptchaVerifierRef.current || !recaptchaInitialized) {
+      toast.error('Please wait for reCAPTCHA to initialize or refresh the page');
       return;
     }
     
@@ -73,20 +117,34 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
       const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`; // Assuming India (+91)
       
       // Send verification code
-      const confirmation = await signInWithPhoneNumber(auth, formattedPhone, window.recaptchaVerifier);
+      const confirmation = await signInWithPhoneNumber(
+        auth, 
+        formattedPhone, 
+        recaptchaVerifierRef.current
+      );
+      
       setConfirmationResult(confirmation);
       setStep('verify');
       toast.success('Verification code sent!');
     } catch (error) {
       console.error('Error sending code:', error);
-      toast.error(error.message || 'Failed to send verification code');
+      toast.error(error.message || 'Failed to send verification code. Please try again.');
       
       // Reset recaptcha on error
-      if (window.recaptchaVerifier) {
-        window.recaptchaVerifier.clear();
-        window.recaptchaVerifier = null;
+      setRecaptchaInitialized(false);
+      if (recaptchaVerifierRef.current) {
+        try {
+          recaptchaVerifierRef.current.clear();
+        } catch (clearError) {
+          console.error('Error clearing reCAPTCHA:', clearError);
+        }
+        recaptchaVerifierRef.current = null;
       }
-      setupRecaptcha();
+      
+      // Re-initialize after a short delay
+      setTimeout(() => {
+        setupRecaptcha();
+      }, 1000);
     } finally {
       setLoading(false);
     }
@@ -116,7 +174,9 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
       toast.success('Phone verified successfully!');
       
       if (onComplete) {
-        onComplete();
+        setTimeout(() => {
+          onComplete();
+        }, 1500); // Give time for the user to see the success message
       }
     } catch (error) {
       console.error('Error verifying code:', error);
@@ -176,12 +236,20 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
             </p>
           </div>
           
-          <div id="recaptcha-container" className="mt-2"></div>
+          <div className="mt-2 flex justify-center">
+            <div ref={recaptchaContainerRef} className="recaptcha-container"></div>
+          </div>
+          
+          {!recaptchaInitialized && (
+            <p className="text-sm text-gray-500 text-center">
+              Loading verification challenge...
+            </p>
+          )}
           
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !recaptchaInitialized}
               className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
               {loading ? (
@@ -251,7 +319,13 @@ const PhoneVerification = ({ onComplete, canSkip = true }) => {
             
             <button
               type="button"
-              onClick={() => setStep('input')}
+              onClick={() => {
+                setStep('input');
+                // Re-initialize recaptcha after a short delay when going back
+                setTimeout(() => {
+                  setupRecaptcha();
+                }, 500);
+              }}
               className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Back
