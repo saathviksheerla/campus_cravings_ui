@@ -1,28 +1,101 @@
 // src/pages/Menu.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthenticationContext';
 import { useCart } from '../context/CartContext';
 import { getMenu, createOrder, getCategories } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const baseURL = process.env.REACT_APP_API_URL;
 
+function QuantityCounter({ item, quantity, onIncrease, onDecrease, onRemove }) {
+  return (
+    <div className="flex items-center justify-center">
+      <motion.button 
+        whileTap={{ scale: 0.9 }}
+        onClick={quantity === 1 ? onRemove : onDecrease}
+        className="w-8 h-8 flex items-center justify-center bg-accent text-primary rounded-full hover:bg-accent-dark transition-colors focus:outline-none"
+        aria-label="Decrease quantity"
+      >
+        <span className="text-xl font-bold">−</span>
+      </motion.button>
+      <motion.span 
+        key={quantity}
+        initial={{ scale: 0.8 }}
+        animate={{ scale: 1 }}
+        className="mx-3 text-secondary font-medium"
+      >
+        {quantity}
+      </motion.span>
+      <motion.button 
+        whileTap={{ scale: 0.9 }}
+        onClick={onIncrease}
+        className="w-8 h-8 flex items-center justify-center bg-accent text-primary rounded-full hover:bg-accent-dark transition-colors focus:outline-none"
+        aria-label="Increase quantity"
+      >
+        <span className="text-xl font-bold">+</span>
+      </motion.button>
+    </div>
+  );
+}
+
 function MenuItem({ item, onOrder, onEdit, isAdmin }) {
-  const { addToCart } = useCart();
+  const { addToCart, removeFromCart, updateQuantity, cartItems } = useCart();
   const [cardColor] = useState(() => {
     // Randomly pick between food card colors for variety
     const colors = ['food-card-red', 'food-card-orange'];
     return colors[Math.floor(Math.random() * colors.length)];
   });
+  
+  // Get the item from cart if it exists
+  const cartItem = cartItems.find(i => i._id === item._id);
+  const itemQuantity = cartItem ? cartItem.quantity : 0;
 
   const handleAddToCart = () => {
     addToCart(item, 1);
     toast.success(`${item.name} added to cart`);
   };
 
+  const handleIncrease = () => {
+    addToCart(item, 1);
+  };
+
+  const handleDecrease = () => {
+    if (cartItem && cartItem.quantity > 1) {
+      updateQuantity(item._id, cartItem.quantity - 1);
+    } else {
+      removeFromCart(item._id);
+    }
+  };
+
+  const handleRemove = () => {
+    removeFromCart(item._id);
+    toast.success(`${item.name} removed from cart`);
+  };
+
   return (
-    <div className="bg-food-card-red rounded-lg shadow-elegant hover:shadow-luxury transition-shadow duration-300 overflow-hidden">
+    <motion.div 
+      layout
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ duration: 0.3 }}
+      className="bg-food-card-red rounded-lg shadow-elegant hover:shadow-luxury transition-shadow duration-300 overflow-hidden relative"
+    >
+      {/* Cart item indicator */}
+      <AnimatePresence>
+        {itemQuantity > 0 && (
+          <motion.div 
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            className="absolute top-2 right-2 bg-accent text-primary font-bold rounded-full w-7 h-7 flex items-center justify-center text-sm"
+          >
+            {itemQuantity}
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div>
         <img
           src={item.imageUrl}
@@ -51,23 +124,97 @@ function MenuItem({ item, onOrder, onEdit, isAdmin }) {
             Edit Item
           </button>
         ) : (
-          <div className="p-4 pt-0 flex gap-2">
-            <button
-              onClick={handleAddToCart}
-              className="flex-1 py-3 bg-accent text-primary font-body font-medium rounded-md hover:bg-accent-dark transition-colors"
-            >
-              Add to Cart
-            </button>
-            <button
-              onClick={() => onOrder(item)}
-              className="flex-1 py-3 border border-accent text-accent font-body font-medium rounded-md hover:bg-accent/10 transition-colors"
-            >
-              Order Now
-            </button>
+          <div className="p-4 pt-0">
+            <AnimatePresence mode="wait">
+              {itemQuantity > 0 ? (
+                <motion.div 
+                  key="counter"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex justify-center"
+                >
+                  <QuantityCounter 
+                    item={item} 
+                    quantity={itemQuantity}
+                    onIncrease={handleIncrease}
+                    onDecrease={handleDecrease}
+                    onRemove={handleRemove}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div 
+                  key="buttons"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex gap-2"
+                >
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleAddToCart}
+                    className="flex-1 py-3 bg-accent text-primary font-body font-medium rounded-md hover:bg-accent-dark transition-colors"
+                  >
+                    Add to Cart
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => onOrder(item)}
+                    className="flex-1 py-3 border border-accent text-accent font-body font-medium rounded-md hover:bg-accent/10 transition-colors"
+                  >
+                    Order Now
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
+  );
+}
+
+// Floating checkout button component
+function FloatingCheckoutButton({ cartItems, totalAmount, onClick }) {
+  const itemCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  
+  return (
+    <AnimatePresence>
+      {itemCount > 0 && (
+        <motion.button
+          initial={{ y: 100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 100, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          onClick={onClick}
+          className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 py-3 px-6 bg-accent text-primary rounded-full shadow-lg hover:bg-accent-dark"
+        >
+          <span className="font-bold">Checkout Now</span>
+          <span className="bg-primary text-accent rounded-full px-2 py-1 text-sm font-bold">₹{totalAmount}</span>
+        </motion.button>
+      )}
+    </AnimatePresence>
+  );
+}
+
+// Header cart total component
+function CartTotalIndicator({ totalAmount, itemCount }) {
+  return (
+    <AnimatePresence>
+      {itemCount > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          className="ml-2 flex items-center bg-accent/10 rounded-full px-3 py-1"
+        >
+          <span className="text-sm font-medium text-accent mr-1">₹{totalAmount}</span>
+          <span className="bg-accent text-primary rounded-full h-5 w-5 flex items-center justify-center text-xs font-bold">
+            {itemCount}
+          </span>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -81,6 +228,19 @@ export default function Menu() {
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { cartItems } = useCart();
+  const categoryBarRef = useRef(null);
+  
+  // Calculate total cart amount
+  const totalCartAmount = cartItems.reduce(
+    (total, item) => total + (item.price * item.quantity), 
+    0
+  ).toFixed(2);
+  
+  const totalItemCount = cartItems.reduce(
+    (total, item) => total + item.quantity, 
+    0
+  );
 
   useEffect(() => {
     fetchMenuAndCategories();
@@ -89,6 +249,31 @@ export default function Menu() {
   useEffect(() => {
     filterItems();
   }, [menuItems, activeCategory, searchQuery]);
+  
+  // Setup sticky scroll observer
+  useEffect(() => {
+    if (!categoryBarRef.current) return;
+    
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.target) {
+          if (!entry.isIntersecting) {
+            entry.target.classList.add('sticky-category-bar');
+          } else {
+            entry.target.classList.remove('sticky-category-bar');
+          }
+        }
+      },
+      { threshold: 0, rootMargin: '-1px 0px 0px 0px' }
+    );
+    
+    observer.observe(categoryBarRef.current);
+    return () => {
+      if (categoryBarRef.current) {
+        observer.unobserve(categoryBarRef.current);
+      }
+    };
+  }, [categoryBarRef]);
 
   const fetchMenuAndCategories = async () => {
     try {
@@ -172,6 +357,10 @@ export default function Menu() {
       toast.error(error.response?.data?.error || 'Failed to place order');
     }
   };
+  
+  const handleCheckout = () => {
+    navigate('/checkout');
+  };
 
   if (loading) {
     return (
@@ -209,14 +398,17 @@ export default function Menu() {
     <div className="bg-primary min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
-          <h1 className="text-3xl font-display font-bold text-accent sm:text-4xl">
-            Our Menu
-          </h1>
+          <div className="flex items-center justify-center">
+            <h1 className="text-3xl font-display font-bold text-accent sm:text-4xl">
+              Our Menu
+            </h1>
+            <CartTotalIndicator totalAmount={totalCartAmount} itemCount={totalItemCount} />
+          </div>
         </div>
 
         {/* Search and Filter UI */}
-        <div className="mt-8">
-          <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+        <div className="mt-8" ref={categoryBarRef}>
+          <div className="flex flex-col md:flex-row justify-between items-start gap-4 bg-primary py-2">
             {/* Search Bar */}
             <div className="relative w-full md:w-64">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -226,7 +418,7 @@ export default function Menu() {
               </div>
               <input
                 type="text"
-                className="bg-secondary border border-primary-light/30 text-primary text-sm rounded-lg focus:ring-accent focus:border-accent block w-full pl-10 p-2.5"
+                className="bg-white border border-primary-light/30 text-primary text-sm rounded-lg focus:ring-accent focus:border-accent block w-full pl-10 p-2.5"
                 placeholder="Search menu items..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -234,9 +426,10 @@ export default function Menu() {
             </div>
 
             {/* Category Filters */}
-            <div className="w-full md:max-w-3xl">
-              <div className="flex flex-wrap gap-2">
-                <button
+            <div className="w-full md:max-w-3xl overflow-x-auto pb-2">
+              <div className="flex flex-nowrap md:flex-wrap gap-2 min-w-max">
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setActiveCategory(null)}
                   className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap ${
                     activeCategory === null
@@ -245,11 +438,12 @@ export default function Menu() {
                   }`}
                 >
                   All Items
-                </button>
+                </motion.button>
                 
                 {categories.map((category) => (
-                  <button
+                  <motion.button
                     key={category || 'uncategorized'}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => handleCategoryClick(category)}
                     className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap ${
                       activeCategory === category
@@ -258,7 +452,7 @@ export default function Menu() {
                     }`}
                   >
                     {category === '' ? 'Uncategorized' : category}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -291,19 +485,30 @@ export default function Menu() {
               <p className="mt-2 text-secondary/70">Try changing your search or filter criteria</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredItems.map(item => (
-                <MenuItem 
-                  key={item._id} 
-                  item={item} 
-                  onOrder={handleOrder}
-                  isAdmin={user?.role === 'admin'}
-                  onEdit={item => navigate(`/admin/menu-items/edit/${item._id}`)}
-                />
-              ))}
-            </div>
+            <motion.div 
+              layout
+              className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <AnimatePresence>
+                {filteredItems.map(item => (
+                  <MenuItem 
+                    key={item._id} 
+                    item={item} 
+                    onOrder={handleOrder}
+                    isAdmin={user?.role === 'admin'}
+                    onEdit={item => navigate(`/admin/menu-items/edit/${item._id}`)}
+                  />
+                ))}
+              </AnimatePresence>
+            </motion.div>
           )}
         </div>
+        
+        {/* Floating Checkout Button */}
+        <FloatingCheckoutButton 
+          cartItems={cartItems} 
+          totalAmount={totalCartAmount}
+          onClick={handleCheckout}
+        />
       </div>
     </div>
   );
