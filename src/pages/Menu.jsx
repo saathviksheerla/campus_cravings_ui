@@ -9,7 +9,10 @@ import { useNavigate } from 'react-router-dom';
 const baseURL = process.env.REACT_APP_API_URL;
 
 function MenuItem({ item, onOrder, onEdit, isAdmin }) {
-  const { addToCart } = useCart();
+  const { addToCart, updateQuantity, cartItems } = useCart();
+
+  const cartItem = cartItems.find(ci => ci._id === item._id);
+  const quantity = cartItem ? cartItem.quantity : 0;
 
   const handleAddToCart = () => {
     addToCart(item, 1);
@@ -32,12 +35,11 @@ function MenuItem({ item, onOrder, onEdit, isAdmin }) {
             </span>
           </div>
           <p className="mt-2 text-primary/70 font-body">{item.description}</p>
-          <div className="mt-2">
-            <p className="text-sm text-gray-500">
-              Preparation time: {item.preparationTime} mins
-            </p>
-          </div>
+          <p className="mt-2 text-sm text-gray-500">
+            Preparation time: {item.preparationTime} mins
+          </p>
         </div>
+
         {isAdmin ? (
           <button
             onClick={() => onEdit(item)}
@@ -47,12 +49,31 @@ function MenuItem({ item, onOrder, onEdit, isAdmin }) {
           </button>
         ) : (
           <div className="mt-6 flex gap-2">
-            <button
-              onClick={handleAddToCart}
-              className="flex-1 py-3 bg-accent text-primary font-body font-medium rounded-md hover:bg-accent-dark transition-colors"
-            >
-              Add to Cart
-            </button>
+            {quantity > 0 ? (
+             <div className="flex items-center justify-between border border-accent rounded-md w-full px-3 py-1.5">
+             <button
+               onClick={() => updateQuantity(item._id, quantity - 1)}
+               className="text-base font-bold text-accent hover:text-accent-dark px-2 py-1"
+             >
+               –
+             </button>
+             <span className="text-base font-medium">{quantity}</span>
+             <button
+               onClick={() => updateQuantity(item._id, quantity + 1)}
+               className="text-base font-bold text-accent hover:text-accent-dark px-2 py-1"
+             >
+               +
+             </button>
+           </div>
+           
+            ) : (
+              <button
+                onClick={handleAddToCart}
+                className="w-1/2 py-1.5 px-2 text-sm bg-accent text-primary font-body font-medium rounded hover:bg-accent-dark transition-colors"
+              >
+                Add to Cart
+              </button>
+            )}
             <button
               onClick={() => onOrder(item)}
               className="flex-1 py-3 border border-accent text-accent font-body font-medium rounded-md hover:bg-accent/10 transition-colors"
@@ -94,13 +115,10 @@ export default function Menu() {
 
   const fetchMenu = async () => {
     try {
-      console.log('Fetching menu...');
       const response = await getMenu();
-      console.log('Menu response:', response);
       setMenuItems(response.data);
       setError(null);
     } catch (error) {
-      console.error('Menu fetch error:', error);
       setError(error.response?.data?.error || 'Failed to load menu');
       toast.error('Failed to load menu');
     } finally {
@@ -117,14 +135,10 @@ export default function Menu() {
 
     try {
       await createOrder({
-        items: [{
-          menuItemId: item._id,
-          quantity: 1
-        }]
+        items: [{ menuItemId: item._id, quantity: 1 }]
       });
       toast.success('Order placed successfully!');
     } catch (error) {
-      console.error('Order error:', error);
       toast.error(error.response?.data?.error || 'Failed to place order');
     }
   };
@@ -152,19 +166,8 @@ export default function Menu() {
     );
   }
 
-  if (menuItems.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-semibold text-gray-900">No Menu Items Available</h2>
-        <p className="mt-2 text-gray-600">Please check back later.</p>
-      </div>
-    );
-  }
-
   const categorizedItems = menuItems.reduce((acc, item) => {
-    if (!acc[item.category]) {
-      acc[item.category] = [];
-    }
+    if (!acc[item.category]) acc[item.category] = [];
     acc[item.category].push(item);
     return acc;
   }, {});
@@ -172,14 +175,11 @@ export default function Menu() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center">
-        <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-          Our Menu
-        </h1>
+        <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Our Menu</h1>
         <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
           Fresh, delicious meals prepared daily
         </p>
       </div>
-
       {Object.entries(categorizedItems).map(([category, items]) => (
         <MenuSection
           key={category}
