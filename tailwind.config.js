@@ -6,15 +6,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#262626',    // Dark Gray
-        secondary: '#F2F2F2',  // Light Gray
-        accent: '#FFD700',     // Gold
-        'primary-light': '#404040',
-        'primary-dark': '#1a1a1a',
-        'secondary-light': '#ffffff',
-        'secondary-dark': '#d9d9d9',
-        'accent-light': '#ffe033',
-        'accent-dark': '#ccac00',
+        primary: '#3B3A1D',      // Dark olive green/brown
+        secondary: '#F2E9C9',    // Light cream
+        accent: '#FFD700',       // Gold
+        'primary-light': '#4E4D2A',
+        'primary-dark': '#2A2912',
+        'secondary-light': '#FFF8E6',
+        'secondary-dark': '#E5D9B6',
+        'accent-light': '#FFE033',
+        'accent-dark': '#CCAC00',
+        'food-card': {
+          'red': '#A73121',      // Dark red for food cards
+          'orange': '#C3762A',   // Orange for food cards
+        }
       },
       fontFamily: {
         'display': ['Playfair Display', 'serif'],
@@ -31,8 +35,8 @@ module.exports = {
         '22': '5.5rem',
       },
       boxShadow: {
-        'elegant': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-        'luxury': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.2)',
+        'elegant': '0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1)',
+        'luxury': '0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.3)',
       }
     },
   },
