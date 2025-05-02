@@ -27,13 +27,13 @@ export default function MobileBottomNav() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-primary/90 backdrop-blur-lg text-secondary z-[999] border-t border-primary/20 sm:hidden">
+    <div className="fixed bottom-0 left-0 right-0 bg-primary/90 backdrop-blur-lg text-secondary z-[999] border-t border-primary-light/20 sm:hidden">
       <div className="flex justify-around items-center h-16">
         <Link 
           to="/menu" 
           className={`flex flex-col items-center space-y-1 px-3 py-2 ${
             location.pathname === '/menu' ? 'text-accent' : 'text-secondary'
-          }`}
+          } font-body`}
           aria-label="Menu"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -47,7 +47,7 @@ export default function MobileBottomNav() {
             to="/orders" 
             className={`flex flex-col items-center space-y-1 px-3 py-2 ${
               location.pathname === '/orders' ? 'text-accent' : 'text-secondary'
-            }`}
+            } font-body`}
             aria-label="Orders"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,7 +61,7 @@ export default function MobileBottomNav() {
           to="/" 
           className={`flex flex-col items-center space-y-1 px-3 py-2 ${
             location.pathname === '/' ? 'text-accent' : 'text-secondary'
-          }`}
+          } font-body`}
           aria-label="Home"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -74,7 +74,7 @@ export default function MobileBottomNav() {
           to="/cart" 
           className={`flex flex-col items-center space-y-1 px-3 py-2 relative ${
             location.pathname === '/cart' ? 'text-accent' : 'text-secondary'
-          }`}
+          } font-body`}
           aria-label="Cart"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,7 +92,7 @@ export default function MobileBottomNav() {
           to="/profile" 
           className={`flex flex-col items-center space-y-1 px-3 py-2 ${
             location.pathname === '/profile' ? 'text-accent' : 'text-secondary'
-          }`}
+          } font-body`}
           aria-label="Profile"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

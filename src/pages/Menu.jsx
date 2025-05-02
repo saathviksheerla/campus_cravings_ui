@@ -41,7 +41,7 @@ function QuantityCounter({ item, quantity, onIncrease, onDecrease, onRemove }) {
 function MenuItem({ item, onOrder, onEdit, isAdmin }) {
   const { addToCart, removeFromCart, updateQuantity, cartItems } = useCart();
   const [cardColor] = useState(() => {
-    // Randomly pick between food card colors for variety
+    // Pick between food card colors for variety
     const colors = ['food-card-red', 'food-card-orange'];
     return colors[Math.floor(Math.random() * colors.length)];
   });
@@ -109,7 +109,7 @@ function MenuItem({ item, onOrder, onEdit, isAdmin }) {
           </div>
           <p className="mt-2 text-secondary/90 font-body">{item.description}</p>
           <div className="mt-2">
-            <p className="text-sm text-secondary/70">
+            <p className="text-sm text-secondary/70 font-body">
               Preparation time: {item.preparationTime} mins
             </p>
           </div>
@@ -117,7 +117,7 @@ function MenuItem({ item, onOrder, onEdit, isAdmin }) {
         {isAdmin ? (
           <button
             onClick={() => onEdit(item)}
-            className="w-full bg-primary-light text-secondary px-4 py-2 hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full bg-primary-light text-secondary px-4 py-2 hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-accent font-body"
           >
             Edit Item
           </button>
@@ -185,7 +185,7 @@ function FloatingCheckoutButton({ cartItems, totalAmount, onClick }) {
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           onClick={onClick}
-          className="fixed bottom-18 sm:bottom-4 right-6 z-50 flex items-center space-x-2 py-3 px-6 bg-accent text-primary rounded-full shadow-lg hover:bg-accent-dark"
+          className="fixed bottom-18 sm:bottom-4 right-6 z-50 flex items-center space-x-2 py-3 px-6 bg-accent text-primary rounded-full shadow-lg hover:bg-accent-dark font-body"
         >
           <span className="font-bold">Checkout Now</span>
           <span className="bg-primary text-accent rounded-full px-2 py-1 text-sm font-bold">₹{totalAmount}</span>
@@ -336,8 +336,8 @@ export default function Menu() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64 bg-primary text-accent">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+      <div className="flex justify-center items-center h-64 bg-primary text-secondary">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-secondary"></div>
       </div>
     );
   }
@@ -345,11 +345,11 @@ export default function Menu() {
   if (error) {
     return (
       <div className="text-center py-12 bg-primary text-secondary">
-        <h2 className="text-2xl font-semibold">Error Loading Menu</h2>
-        <p className="mt-2 text-secondary/70">{error}</p>
+        <h2 className="text-2xl font-display font-semibold">Error Loading Menu</h2>
+        <p className="mt-2 text-secondary/70 font-body">{error}</p>
         <button
           onClick={fetchMenuAndCategories}
-          className="mt-4 px-4 py-2 bg-accent text-primary rounded-md hover:bg-accent-dark"
+          className="mt-4 px-4 py-2 bg-accent text-primary rounded-md hover:bg-accent-dark font-body"
         >
           Try Again
         </button>
@@ -466,7 +466,7 @@ export default function Menu() {
                     item={item} 
                     onOrder={handleOrder}
                     isAdmin={user?.role === 'admin'}
-                    onEdit={item => navigate(`/admin/menu-items/edit/${item._id}`)}
+                    onEdit={() => navigate(`/admin/menu`)}
                   />
                 ))}
               </AnimatePresence>

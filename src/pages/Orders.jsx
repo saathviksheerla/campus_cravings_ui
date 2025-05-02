@@ -49,8 +49,8 @@ export default function Orders() {
         <h1 className="font-display text-3xl font-bold text-accent">Your Orders</h1>
         <div className="mt-8 space-y-6">
           {orders.map((order) => (
-            <div key={order._id} className="bg-food-card-orange shadow-elegant rounded-lg overflow-hidden">
-              <div className="px-6 py-6 border-b border-primary/10">
+            <div key={order._id} className="bg-primary-light shadow-luxury rounded-lg overflow-hidden">
+              <div className="px-6 py-6 border-b border-secondary/10">
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="font-display text-xl font-bold text-secondary">
