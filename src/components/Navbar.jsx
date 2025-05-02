@@ -23,16 +23,16 @@ export default function Navbar() {
 
             {/* Desktop Navigation - Hidden on mobile */}
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link to="/menu" className="inline-flex items-center px-1 pt-1 text-secondary hover:text-accent transition-colors">
+              <Link to="/menu" className="inline-flex items-center px-1 pt-1 text-secondary hover:text-accent transition-colors font-body">
                 Menu
               </Link>
               {user && user.role === 'client' && (
-                <Link to="/orders" className="inline-flex items-center px-1 pt-1 text-secondary hover:text-accent transition-colors">
+                <Link to="/orders" className="inline-flex items-center px-1 pt-1 text-secondary hover:text-accent transition-colors font-body">
                   Orders
                 </Link>
               )}
               {user && user.role === 'admin' && (
-                <Link to="/admin" className="inline-flex items-center px-1 pt-1 text-secondary hover:text-accent transition-colors">
+                <Link to="/admin" className="inline-flex items-center px-1 pt-1 text-secondary hover:text-accent transition-colors font-body">
                   Admin Dashboard
                 </Link>
               )}
@@ -43,7 +43,7 @@ export default function Navbar() {
           {user ? (
             <div className="hidden sm:flex sm:items-center">
               <div className="flex items-center space-x-8">
-                <Link to="/cart" className="relative text-secondary hover:text-accent transition-colors">
+                <Link to="/cart" className="relative text-secondary hover:text-accent transition-colors font-body">
                   <span className="text-secondary hover:text-accent transition-colors">Cart</span>
                   {cartItemsCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-accent text-primary text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
@@ -51,7 +51,7 @@ export default function Navbar() {
                     </span>
                   )}
                 </Link>
-                <Link to="/profile" className="text-secondary hover:text-accent transition-colors">
+                <Link to="/profile" className="text-secondary hover:text-accent transition-colors font-body">
                   Profile
                 </Link>
               </div>
@@ -59,7 +59,7 @@ export default function Navbar() {
           ) : (
             <div className="hidden sm:flex sm:items-center">
               <div className="flex items-center space-x-8">
-                <Link to="/cart" className="relative text-secondary hover:text-accent transition-colors">
+                <Link to="/cart" className="relative text-secondary hover:text-accent transition-colors font-body">
                   <span className="text-secondary hover:text-accent transition-colors">Cart</span>
                   {cartItemsCount > 0 && (
                     <span className="absolute -top-2 -right-2 bg-accent text-primary text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
@@ -69,7 +69,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   to="/login"
-                  className="m-2 px-4 py-2 w-fit h-fit border border-accent text-accent hover:bg-accent hover:text-primary transition-colors rounded-md"
+                  className="m-2 px-4 py-2 w-fit h-fit border border-accent text-accent hover:bg-accent hover:text-primary transition-colors rounded-md font-body"
                 >
                   Login
                 </Link>
