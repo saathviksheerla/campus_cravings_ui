@@ -7,8 +7,6 @@ import { getMenu, createOrder, getCategories } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const baseURL = process.env.REACT_APP_API_URL;
-
 function QuantityCounter({ item, quantity, onIncrease, onDecrease, onRemove }) {
   return (
     <div className="flex items-center justify-center">
@@ -187,32 +185,11 @@ function FloatingCheckoutButton({ cartItems, totalAmount, onClick }) {
           exit={{ y: 100, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           onClick={onClick}
-          className="fixed bottom-6 right-6 z-50 flex items-center space-x-2 py-3 px-6 bg-accent text-primary rounded-full shadow-lg hover:bg-accent-dark"
+          className="fixed bottom-18 sm:bottom-4 right-6 z-50 flex items-center space-x-2 py-3 px-6 bg-accent text-primary rounded-full shadow-lg hover:bg-accent-dark"
         >
           <span className="font-bold">Checkout Now</span>
           <span className="bg-primary text-accent rounded-full px-2 py-1 text-sm font-bold">₹{totalAmount}</span>
         </motion.button>
-      )}
-    </AnimatePresence>
-  );
-}
-
-// Header cart total component
-function CartTotalIndicator({ totalAmount, itemCount }) {
-  return (
-    <AnimatePresence>
-      {itemCount > 0 && (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          className="ml-2 flex items-center bg-accent/10 rounded-full px-3 py-1"
-        >
-          <span className="text-sm font-medium text-accent mr-1">₹{totalAmount}</span>
-          <span className="bg-accent text-primary rounded-full h-5 w-5 flex items-center justify-center text-xs font-bold">
-            {itemCount}
-          </span>
-        </motion.div>
       )}
     </AnimatePresence>
   );
@@ -236,11 +213,6 @@ export default function Menu() {
     (total, item) => total + (item.price * item.quantity), 
     0
   ).toFixed(2);
-  
-  const totalItemCount = cartItems.reduce(
-    (total, item) => total + item.quantity, 
-    0
-  );
 
   useEffect(() => {
     fetchMenuAndCategories();
@@ -359,7 +331,7 @@ export default function Menu() {
   };
   
   const handleCheckout = () => {
-    navigate('/checkout');
+    navigate('/cart');
   };
 
   if (loading) {
@@ -402,7 +374,6 @@ export default function Menu() {
             <h1 className="text-3xl font-display font-bold text-accent sm:text-4xl">
               Our Menu
             </h1>
-            <CartTotalIndicator totalAmount={totalCartAmount} itemCount={totalItemCount} />
           </div>
         </div>
 
@@ -434,7 +405,7 @@ export default function Menu() {
                   className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap ${
                     activeCategory === null
                       ? 'bg-accent text-primary'
-                      : 'bg-secondary/80 text-primary hover:bg-secondary'
+                      : 'bg-white text-primary hover:bg-secondary'
                   }`}
                 >
                   All Items
@@ -448,7 +419,7 @@ export default function Menu() {
                     className={`px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap ${
                       activeCategory === category
                         ? 'bg-accent text-primary'
-                        : 'bg-secondary/80 text-primary hover:bg-secondary'
+                        : 'bg-white text-primary hover:bg-secondary'
                     }`}
                   >
                     {category === '' ? 'Uncategorized' : category}
