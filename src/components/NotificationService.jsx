@@ -18,7 +18,7 @@ const NotificationService = () => {
           try {
             await api.post(`${baseUrl}/user/fcm-token`, { token });
             setIsTokenSaved(true);
-            console.log('FCM token saved to server');
+            //console.log('FCM token saved to server');
           } catch (error) {
             console.error('Failed to save token to server:', error);
           }

@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
+import { getAdminOrders } from '../../services/api';
+import { useAuth } from '../../context/AuthenticationContext';
 
 export default function ManageOrders() {
   const [orders, setOrders] = useState([]);
@@ -9,6 +11,23 @@ export default function ManageOrders() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('all');
+  const {user} = useAuth();
+
+  let collegeId;
+      if (user?.selectedCollegeId) {
+          collegeId = user.selectedCollegeId;
+      } else {
+          const storedCollege = localStorage.getItem('selectedCollege');
+          if (storedCollege) {
+              try {
+                  collegeId = JSON.parse(storedCollege).id;
+              } catch (e) {
+                  console.error("Error parsing stored college data:", e);
+                  // Handle error, maybe clear localStorage or set a default
+                  collegeId = '';
+              }
+          }
+      }
 
   const tabs = [
     { id: 'all', label: 'All Orders' },
@@ -34,7 +53,7 @@ export default function ManageOrders() {
 
   const fetchOrders = async () => {
     try {
-      const response = await api.get('/orders/admin/all');
+      const response = await getAdminOrders(collegeId);
       setOrders(response.data);
       setFilteredOrders(activeTab === 'all' ? response.data : response.data.filter(order => order.status === activeTab));
       setError(null);
@@ -48,7 +67,7 @@ export default function ManageOrders() {
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
-      await api.put(`/orders/admin/${orderId}/status`, { status: newStatus });
+      await api.put(`/orders/admin/${orderId}/status`, { status: newStatus, collegeId });
       toast.success(`Order status updated to ${newStatus}`);
       // Update the order status in the local state
       const updatedOrders = orders.map(order => 

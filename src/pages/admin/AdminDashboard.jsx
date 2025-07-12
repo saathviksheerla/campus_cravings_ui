@@ -1,10 +1,28 @@
 // src/pages/Admin/AdminDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import { getAdminOrders } from '../../services/api';
+import { getMenu } from '../../services/api';
+import {useAuth} from '../../context/AuthenticationContext';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  let collegeId;
+      if (user?.selectedCollegeId) {
+          collegeId = user.selectedCollegeId;
+      } else {
+          const storedCollege = localStorage.getItem('selectedCollege');
+          if (storedCollege) {
+              try {
+                  collegeId = JSON.parse(storedCollege).id;
+              } catch (e) {
+                  console.error("Error parsing stored college data:", e);
+                  // Handle error, maybe clear localStorage or set a default
+                  collegeId = '';
+              }
+          }
+      }
   const [stats, setStats] = useState({
     pendingOrders: 0,
     totalMenuItems: 0,
@@ -21,7 +39,7 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       // Get orders
-      const ordersResponse = await api.get('/orders/admin/all');
+      const ordersResponse = await getAdminOrders(collegeId);
       const pendingOrders = ordersResponse.data.filter(order => 
         ['pending', 'confirmed', 'preparing'].includes(order.status)
       ).length;
@@ -39,7 +57,7 @@ export default function AdminDashboard() {
         .reduce((sum, order) => sum + order.totalAmount, 0);
       
       // Get menu items
-      const menuResponse = await api.get('/menu');
+      const menuResponse = await getMenu(collegeId);
       const totalMenuItems = menuResponse.data.length;
       
       setStats({ pendingOrders, totalMenuItems, todaysOrders, revenue });

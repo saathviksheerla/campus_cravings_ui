@@ -2,10 +2,28 @@
 import React, { useState, useEffect } from 'react';
 import { getOrders } from '../services/api';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthenticationContext';
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const {user} = useAuth();
+  
+    let collegeId;
+        if (user?.selectedCollegeId) {
+            collegeId = user.selectedCollegeId;
+        } else {
+            const storedCollege = localStorage.getItem('selectedCollege');
+            if (storedCollege) {
+                try {
+                    collegeId = JSON.parse(storedCollege).id;
+                } catch (e) {
+                    console.error("Error parsing stored college data:", e);
+                    // Handle error, maybe clear localStorage or set a default
+                    collegeId = '';
+                }
+            }
+        }
 
   useEffect(() => {
     fetchOrders();
@@ -13,7 +31,7 @@ export default function Orders() {
 
   const fetchOrders = async () => {
     try {
-      const response = await getOrders();
+      const response = await getOrders(collegeId);
       setOrders(response.data);
     } catch (error) {
       toast.error('Failed to load orders');

@@ -15,7 +15,7 @@ const messaging = firebase.messaging();
 
 // Handle background messages
 messaging.onBackgroundMessage((payload) => {
-  console.log('Background message received:', payload);
+  //console.log('Background message received:', payload);
   
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
@@ -40,8 +40,8 @@ self.addEventListener('notificationclick', (event) => {
   const action = event.action;
   const data = notification.data;
   
-  console.log('Notification clicked:', notification);
-  console.log('Action:', action);
+  //console.log('Notification clicked:', notification);
+  //console.log('Action:', action);
   
   if (action === 'view_order' && data.orderId) {
     // Open orders page
