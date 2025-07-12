@@ -59,8 +59,26 @@ export default function Cart() {
         menuItemId: item._id,
         quantity: item.quantity
       }));
+
+      console.log('orderItems: ', orderItems);
+
+      let collegeId;
+      if (user?.selectedCollegeId) {
+          collegeId = user.selectedCollegeId;
+      } else {
+          const storedCollege = localStorage.getItem('selectedCollege');
+          if (storedCollege) {
+              try {
+                  collegeId = JSON.parse(storedCollege).id;
+              } catch (e) {
+                  console.error("Error parsing stored college data:", e);
+                  // Handle error, maybe clear localStorage or set a default
+                  collegeId = '';
+              }
+          }
+      }
       
-      await createOrder({ items: orderItems });
+      await createOrder({ items: orderItems, collegeId: collegeId });
       
       // Clear cart after successful order
       clearCart();

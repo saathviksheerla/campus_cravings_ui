@@ -2,8 +2,25 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import api, { getMenu, createMenuItem } from '../../services/api';
+import { useAuth } from '../../context/AuthenticationContext';
 
 export default function ManageMenu() {
+  const {user} = useAuth();
+  let collegeId = null;
+  if (user?.selectedCollegeId) {
+          collegeId = user.selectedCollegeId;
+      } else {
+          const storedCollege = localStorage.getItem('selectedCollege');
+          if (storedCollege) {
+              try {
+                  collegeId = JSON.parse(storedCollege).id;
+              } catch (e) {
+                  console.error("Error parsing stored college data:", e);
+                  // Handle error, maybe clear localStorage or set a default
+                  collegeId = '';
+              }
+          }
+      }
   const [menuItems, setMenuItems] = useState([]);
   const [pendingOrders, setPendingOrders] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -16,7 +33,8 @@ export default function ManageMenu() {
     imageUrl: '',
     category: '',
     preparationTime: '',
-    available: true
+    available: true,
+    collegeId: collegeId
   });
 
   useEffect(() => {
@@ -27,7 +45,7 @@ export default function ManageMenu() {
   const fetchMenuItems = async () => {
     try {
       setLoading(true);
-      const response = await getMenu();
+      const response = await getMenu(collegeId);
       setMenuItems(response.data);
       setError('');
     } catch (err) {
@@ -67,7 +85,8 @@ export default function ManageMenu() {
         imageUrl: '',
         category: '',
         preparationTime: '',
-        available: true
+        available: true,
+        collegeId: collegeId
       });
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create item');
