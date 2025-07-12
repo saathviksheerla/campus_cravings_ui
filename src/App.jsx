@@ -6,6 +6,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import { useAuth } from './context/AuthenticationContext';
 import { AuthenticationProvider } from './context/AuthenticationContext';
 import { CartProvider } from './context/CartContext';
+import { CollegeProvider } from './context/CollegeContext';
 import { AdminRoute } from './components/AdminRoute';
 import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
@@ -15,6 +16,8 @@ import Menu from './pages/Menu';
 import Cart from './pages/Cart';
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
+import CollegeSelectionPage from './pages/CollegeSelectionPage';
+import CollegeSelectionPopup from './components/CollegeSelectionPopup';
 import Login from './pages/Login';
 import GoogleAuthCallback from './components/GoogleAuthCallback';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -46,11 +49,13 @@ function AppRoutes() {
     <div className="min-h-screen bg-primary">
       <Navbar />
       <main className="container mx-auto px-2 pb-20 sm:pb-0">
+        <CollegeSelectionPopup />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/login" element={<Login />} />
           <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
+          <Route path="/college-selection" element={<CollegeSelectionPage />} />
           <Route
             path="/cart"
             element={<Cart />}
@@ -112,12 +117,14 @@ function App() {
     <ErrorBoundary>
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
         <AuthenticationProvider>
-          <CartProvider>
-            <NotificationService />
-            <Router>
-              <AppRoutes />
-            </Router>
-          </CartProvider>
+          <CollegeProvider>
+            <CartProvider>
+              <NotificationService />
+              <Router>
+                <AppRoutes />
+              </Router>
+            </CartProvider>
+          </CollegeProvider>
         </AuthenticationProvider>
       </GoogleOAuthProvider>
     </ErrorBoundary>

@@ -27,9 +27,9 @@ export const getUserProfile = () => api.get('/user/profile');
 export const updateUsername = (data) => api.post('/user/update-username', data);
 
 // Menu
-export const getMenu = () => api.get('/menu');
+export const getMenu = (collegeId) => api.post('/menu', {collegeId});
 export const getCategories = () => api.get('/menu/categories');
-export const createMenuItem = (data) => api.post('/menu', data);
+export const createMenuItem = (data) => api.post('/menu/add', data);
 export const updateMenuItem = (id, data) => api.put(`/menu/${id}`, data);
 export const deleteMenuItem = (id) => api.delete(`/menu/${id}`);
 

@@ -252,7 +252,23 @@ export default function Menu() {
       setLoading(true);
       
       // Fetch menu items
-      const menuResponse = await getMenu();
+      
+      let collegeId;
+      if (user?.selectedCollegeId) {
+          collegeId = user.selectedCollegeId;
+      } else {
+          const storedCollege = localStorage.getItem('selectedCollege');
+          if (storedCollege) {
+              try {
+                  collegeId = JSON.parse(storedCollege).id;
+              } catch (e) {
+                  console.error("Error parsing stored college data:", e);
+                  // Handle error, maybe clear localStorage or set a default
+                  collegeId = '';
+              }
+          }
+      }
+      const menuResponse = await getMenu(collegeId);
       setMenuItems(menuResponse.data);
       
       // Fetch categories
@@ -317,11 +333,28 @@ export default function Menu() {
     }
 
     try {
+      let collegeId;
+      if (user?.selectedCollegeId) {
+          collegeId = user.selectedCollegeId;
+      } else {
+          const storedCollege = localStorage.getItem('selectedCollege');
+          if (storedCollege) {
+              try {
+                  collegeId = JSON.parse(storedCollege).id;
+              } catch (e) {
+                  console.error("Error parsing stored college data:", e);
+                  // Handle error, maybe clear localStorage or set a default
+                  collegeId = '';
+              }
+          }
+      }
+
       await createOrder({
         items: [{
           menuItemId: item._id,
           quantity: 1
-        }]
+        }],
+        collegeId: collegeId
       });
       toast.success('Order placed successfully!');
     } catch (error) {
