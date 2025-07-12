@@ -34,9 +34,9 @@ export const updateMenuItem = (id, data) => api.put(`/menu/${id}`, data);
 export const deleteMenuItem = (id) => api.delete(`/menu/${id}`);
 
 // Orders
-export const createOrder = (orderData) => api.post('/orders', orderData);
-export const getOrders = () => api.get('/orders');
-export const getAdminOrders = () => api.get('/orders/admin/all');
+export const createOrder = (orderData) => api.post('/orders/add', orderData);
+export const getOrders = (collegeId) => api.post('/orders', {collegeId});
+export const getAdminOrders = (collegeId) => api.post('/orders/admin/all', {collegeId});
 export const updateOrderStatus = (orderId, status) => api.put(`/orders/admin/${orderId}/status`, { status });
 
 export default api;

@@ -60,7 +60,7 @@ export default function Cart() {
         quantity: item.quantity
       }));
 
-      console.log('orderItems: ', orderItems);
+      //console.log('orderItems: ', orderItems);
 
       let collegeId;
       if (user?.selectedCollegeId) {

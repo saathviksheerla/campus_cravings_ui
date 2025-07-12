@@ -23,7 +23,7 @@ export const CollegeProvider = ({ children }) => {
     const handleCollegeSelection = async () => {
       if (colleges.length === 0) return; // Wait for colleges to load
 
-      console.log(user);
+      //console.log(user);
       if (user) {
         // User is logged in - check if they have a selected college
         if (user.selectedCollegeId) {

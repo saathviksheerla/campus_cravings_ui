@@ -58,7 +58,7 @@ export default function ManageMenu() {
 
   const checkPendingOrders = async () => {
     try {
-      const response = await api.get('/orders/admin/all');
+      const response = await api.post('/orders/admin/all', {collegeId});
       const hasPendingOrders = response.data.some(order =>
         ['pending', 'confirmed', 'preparing'].includes(order.status)
       );

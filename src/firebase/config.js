@@ -50,7 +50,7 @@ export const requestNotificationPermission = async () => {
 export const onMessageListener = () => {
   return new Promise((resolve) => {
     onMessage(messaging, (payload) => {
-      console.log('Message received:', payload);
+      //console.log('Message received:', payload);
       resolve(payload);
     });
   });
