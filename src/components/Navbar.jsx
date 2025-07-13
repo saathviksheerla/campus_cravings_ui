@@ -1,13 +1,27 @@
 // src/components/Navbar.jsx
-import React from 'react';
+import {React, useState, useEffect} from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthenticationContext';
 import { useCart } from '../context/CartContext';
+import { getUserCollege } from '../services/collegeAPI';
 
 export default function Navbar() {
   const { user } = useAuth();
   const { getCartItemsCount } = useCart();
   const cartItemsCount = getCartItemsCount();
+  const [currentCollege, setCurrentCollege] = useState({});
+  useEffect(() => {
+      fetchCurrentCollege();
+    }, []);
+  
+    const fetchCurrentCollege = async () => {
+      try {
+        const res = await getUserCollege();
+        setCurrentCollege(res.data.college);
+      } catch (error) {
+        console.error('Error fetching current college:', error);
+      }
+    };
 
   return (
     <nav className="sticky top-0 z-[1000] bg-primary/95 text-secondary backdrop-blur-lg shadow-md">
@@ -18,7 +32,9 @@ export default function Navbar() {
             <Link
               to="/"
               className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-display font-bold text-accent">Campus Cravings</span>
+              <span className="text-xl font-display font-bold text-accent drop-shadow-[0_0_8px_rgba(255,215,0,0.45)] shadow-accent-400/20">CampusCravings </span>
+              <super className="mx-1 my-1 text-sm font-display font-bold text-blue-100 transition-all duration-300 hover:shadow-blue-100/40 drop-shadow-[0_0_6px_rgba(219,234,254,0.4)] shadow-blue-100/20">x</super>
+              <span className="text-xl font-display font-bold text-red-500 transition-all duration-300 hover:drop-shadow-[0_0_12px_rgba(239,68,68,0.8)] drop-shadow-[0_0_10px_rgba(239,68,68,0.55)]">{currentCollege.code}</span>
             </Link>
 
             {/* Desktop Navigation - Hidden on mobile */}

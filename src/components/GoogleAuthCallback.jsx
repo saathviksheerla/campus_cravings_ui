@@ -68,7 +68,7 @@ export default function GoogleAuthCallback() {
 
   const handleVerificationComplete = () => {
     try {
-      navigate('/menu', { replace: true });
+      windows.location.href = '/menu';
     } catch (err) {
       console.error('Navigation error:', err);
       // Fallback if navigation fails

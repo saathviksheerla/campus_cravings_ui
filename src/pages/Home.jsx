@@ -27,7 +27,7 @@ export default function Home() {
               </Link>
               {!user && (
                 <Link
-                  to="/register"
+                  to="/login"
                   className="px-8 py-3 border-2 border-accent text-accent font-body font-medium rounded-md hover:bg-accent hover:text-primary transition-colors"
                 >
                   Sign Up

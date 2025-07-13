@@ -205,7 +205,8 @@ export default function Profile() {
             </div>
 
             {/* College Section with Edit Functionality */}
-            <div className="px-6 py-6">
+            {user?.role==='client' && (
+              <div className="px-6 py-6">
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-secondary/70">College</h3>
                 {!isEditingCollege && (
@@ -214,7 +215,7 @@ export default function Profile() {
                     onClick={() => setIsEditingCollege(true)}
                     className="text-accent hover:text-accent-light text-sm font-medium"
                   >
-                    Edit
+                    Change
                   </button>
                 )}
               </div>
@@ -270,6 +271,7 @@ export default function Profile() {
                 </>
               )}
             </div>
+            )}
 
             {/* Mobile Number Section */}
             {user?.phone && (
