@@ -14,6 +14,7 @@ import MobileBottomNav from './components/MobileBottomNav';
 import Home from './pages/Home';
 import Menu from './pages/Menu';
 import Cart from './pages/Cart';
+import PhoneVerificationPage from './pages/PhoneVerificationPage';
 import Orders from './pages/Orders';
 import Profile from './pages/Profile';
 import CollegeSelectionPage from './pages/CollegeSelectionPage';
@@ -56,6 +57,7 @@ function AppRoutes() {
           <Route path="/login" element={<Login />} />
           <Route path="/auth/google/callback" element={<GoogleAuthCallback />} />
           <Route path="/college-selection" element={<CollegeSelectionPage />} />
+          <Route path="/verify-phone" element={<PhoneVerificationPage />} />
           <Route
             path="/cart"
             element={<Cart />}

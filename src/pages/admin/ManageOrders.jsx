@@ -1,5 +1,5 @@
 // src/pages/admin/ManageOrders.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { getAdminOrders } from '../../services/api';
@@ -11,23 +11,28 @@ export default function ManageOrders() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('all');
-  const {user} = useAuth();
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [isPolling, setIsPolling] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  
+  const { user } = useAuth();
+  const pollingRef = useRef(null);
+  const isActiveRef = useRef(true);
 
   let collegeId;
-      if (user?.selectedCollegeId) {
-          collegeId = user.selectedCollegeId;
-      } else {
-          const storedCollege = localStorage.getItem('selectedCollege');
-          if (storedCollege) {
-              try {
-                  collegeId = JSON.parse(storedCollege).id;
-              } catch (e) {
-                  console.error("Error parsing stored college data:", e);
-                  // Handle error, maybe clear localStorage or set a default
-                  collegeId = '';
-              }
-          }
+  if (user?.selectedCollegeId) {
+    collegeId = user.selectedCollegeId;
+  } else {
+    const storedCollege = localStorage.getItem('selectedCollege');
+    if (storedCollege) {
+      try {
+        collegeId = JSON.parse(storedCollege).id;
+      } catch (e) {
+        console.error("Error parsing stored college data:", e);
+        collegeId = '';
       }
+    }
+  }
 
   const tabs = [
     { id: 'all', label: 'All Orders' },
@@ -39,10 +44,146 @@ export default function ManageOrders() {
     { id: 'cancelled', label: 'Cancelled' }
   ];
 
+  // Helper function to check if current time is peak hours
+  const isPeakTime = () => {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const timeInMinutes = hours * 60 + minutes;
+    
+    // Peak times: 8am-10am, 11:30am-2pm, 4pm-5:30pm
+    const peakRanges = [
+      { start: 8 * 60, end: 10 * 60 },           // 8:00 AM - 10:00 AM
+      { start: 11 * 60 + 30, end: 14 * 60 },     // 11:30 AM - 2:00 PM
+      { start: 16 * 60, end: 17 * 60 + 30 }      // 4:00 PM - 5:30 PM
+    ];
+    
+    return peakRanges.some(range => 
+      timeInMinutes >= range.start && timeInMinutes <= range.end
+    );
+  };
+
+  // Helper function to determine polling interval
+  const getPollingInterval = () => {
+    if (isPeakTime()) {
+      return 3000; // 3 seconds during peak hours
+    }
+    
+    // Check if it's a quiet period (very few orders)
+    const totalOrders = orders.length;
+    if (totalOrders <= 2) {
+      return 10000; // 10 seconds during very quiet periods
+    }
+    
+    return 5000; // 5 seconds during normal times
+  };
+
+  // Handle visibility change
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      isActiveRef.current = !document.hidden;
+      
+      if (document.hidden) {
+        // Tab is hidden, stop polling
+        if (pollingRef.current) {
+          clearTimeout(pollingRef.current);
+          pollingRef.current = null;
+        }
+        setIsPolling(false);
+      } else {
+        // Tab is visible, resume polling
+        if (!loading && !error) {
+          startPolling();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [loading, error]);
+
+  // Fetch orders with optional refresh flag
+  const fetchOrders = useCallback(async (isRefresh = false) => {
+    if (isRefresh) {
+      setIsRefreshing(true);
+    }
+    
+    try {
+      const response = await getAdminOrders(collegeId);
+      setOrders(response.data);
+      setFilteredOrders(activeTab === 'all' ? response.data : response.data.filter(order => order.status === activeTab));
+      setError(null);
+      setLastUpdated(new Date());
+      
+      if (isRefresh) {
+        toast.success('Orders refreshed');
+      }
+    } catch (error) {
+      setError('Failed to load orders');
+      if (!isRefresh) {
+        toast.error('Failed to load orders');
+      }
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  }, [collegeId, activeTab]);
+
+  // Start polling
+  const startPolling = useCallback(() => {
+    if (pollingRef.current) {
+      clearTimeout(pollingRef.current);
+    }
+    
+    setIsPolling(true);
+    
+    const poll = async () => {
+      if (isActiveRef.current && !document.hidden) {
+        try {
+          await fetchOrders();
+        } catch (error) {
+          console.error('Polling error:', error);
+        }
+      }
+      
+      // Schedule next poll
+      if (isActiveRef.current) {
+        pollingRef.current = setTimeout(poll, getPollingInterval());
+      }
+    };
+    
+    pollingRef.current = setTimeout(poll, getPollingInterval());
+  }, [fetchOrders]);
+
+  // Stop polling
+  const stopPolling = useCallback(() => {
+    if (pollingRef.current) {
+      clearTimeout(pollingRef.current);
+      pollingRef.current = null;
+    }
+    setIsPolling(false);
+  }, []);
+
+  // Manual refresh
+  const handleManualRefresh = () => {
+    fetchOrders(true);
+  };
+
+  // Initial load
   useEffect(() => {
     fetchOrders();
   }, []);
 
+  // Start polling after initial load
+  useEffect(() => {
+    if (!loading && !error && isActiveRef.current) {
+      startPolling();
+    }
+    
+    return () => stopPolling();
+  }, [loading, error, startPolling, stopPolling]);
+
+  // Update filtered orders when activeTab or orders change
   useEffect(() => {
     if (activeTab === 'all') {
       setFilteredOrders(orders);
@@ -51,19 +192,14 @@ export default function ManageOrders() {
     }
   }, [activeTab, orders]);
 
-  const fetchOrders = async () => {
-    try {
-      const response = await getAdminOrders(collegeId);
-      setOrders(response.data);
-      setFilteredOrders(activeTab === 'all' ? response.data : response.data.filter(order => order.status === activeTab));
-      setError(null);
-    } catch (error) {
-      setError('Failed to load orders');
-      toast.error('Failed to load orders');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingRef.current) {
+        clearTimeout(pollingRef.current);
+      }
+    };
+  }, []);
 
   const updateOrderStatus = async (orderId, newStatus) => {
     try {
@@ -161,7 +297,7 @@ export default function ManageOrders() {
         <h2 className="text-2xl font-semibold text-gray-900">Error Loading Orders</h2>
         <p className="mt-2 text-gray-600">{error}</p>
         <button
-          onClick={fetchOrders}
+          onClick={() => fetchOrders()}
           className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
         >
           Try Again
@@ -172,7 +308,46 @@ export default function ManageOrders() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="font-display text-3xl font-bold text-primary mb-6">Manage Orders</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="font-display text-3xl font-bold text-primary">Manage Orders</h1>
+        
+        {/* Status and Manual Refresh */}
+        <div className="flex items-center space-x-4">
+          <div className="text-sm text-gray-600">
+            {lastUpdated && (
+              <span>
+                Last updated: {lastUpdated.toLocaleTimeString()}
+                {isPolling && (
+                  <span className="ml-2 inline-flex items-center">
+                    <div className="animate-pulse h-2 w-2 bg-green-500 rounded-full"></div>
+                    <span className="ml-1 text-green-600">Live</span>
+                  </span>
+                )}
+              </span>
+            )}
+          </div>
+          
+          <button
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            className="flex items-center px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50"
+          >
+            {isRefreshing ? (
+              <>
+                <div className="animate-spin h-3 w-3 border border-gray-500 border-t-transparent rounded-full mr-2"></div>
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <svg className="h-3 w-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Refresh
+              </>
+            )}
+          </button>
+        </div>
+      </div>
       
       {/* Tabs for filtering orders */}
       <div className="border-b border-gray-200">
@@ -235,6 +410,9 @@ export default function ManageOrders() {
                     </p>
                     <p className="mt-1 font-body text-sm text-primary/70">
                       Customer: {order.userId?.name || 'Unknown'}
+                    </p>
+                    <p className="mt-1 font-body text-sm text-primary/70">
+                      Phone: {order.userId?.phone || 'N/A'}
                     </p>
                   </div>
                   <div className="px-4 py-2 bg-accent/10 rounded-full">

@@ -11,8 +11,10 @@ export default function Navbar() {
   const cartItemsCount = getCartItemsCount();
   const [currentCollege, setCurrentCollege] = useState({});
   useEffect(() => {
-      fetchCurrentCollege();
-    }, []);
+      if(user){
+        fetchCurrentCollege();
+      }
+    }, [user]);
   
     const fetchCurrentCollege = async () => {
       try {
@@ -33,8 +35,12 @@ export default function Navbar() {
               to="/"
               className="flex-shrink-0 flex items-center">
               <span className="text-xl font-display font-bold text-accent drop-shadow-[0_0_8px_rgba(255,215,0,0.45)] shadow-accent-400/20">CampusCravings </span>
-              <super className="mx-1 my-1 text-sm font-display font-bold text-blue-100 transition-all duration-300 hover:shadow-blue-100/40 drop-shadow-[0_0_6px_rgba(219,234,254,0.4)] shadow-blue-100/20">x</super>
-              <span className="text-xl font-display font-bold text-red-500 transition-all duration-300 hover:drop-shadow-[0_0_12px_rgba(239,68,68,0.8)] drop-shadow-[0_0_10px_rgba(239,68,68,0.55)]">{currentCollege.code}</span>
+              {currentCollege?.code && (
+                <>
+                  <sup className="mx-1 my-1 text-sm font-display font-bold text-blue-100 transition-all duration-300 hover:shadow-blue-100/40 drop-shadow-[0_0_6px_rgba(219,234,254,0.4)] shadow-blue-100/20">x</sup>
+                  <span className="text-xl font-display font-bold text-red-500 transition-all duration-300 hover:drop-shadow-[0_0_12px_rgba(239,68,68,0.8)] drop-shadow-[0_0_10px_rgba(239,68,68,0.55)]">{currentCollege?.code || ''}</span>
+                </>
+              )}
             </Link>
 
             {/* Desktop Navigation - Hidden on mobile */}

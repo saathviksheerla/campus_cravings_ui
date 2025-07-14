@@ -68,12 +68,14 @@ export default function GoogleAuthCallback() {
 
   const handleVerificationComplete = () => {
     try {
-      windows.location.href = '/menu';
-    } catch (err) {
-      console.error('Navigation error:', err);
-      // Fallback if navigation fails
-      window.location.href = '/menu';
-    }
+    // Check if there's a return URL in the location state
+    const returnTo = location.state?.returnTo || '/menu';
+    window.location.href = returnTo;
+  } catch (err) {
+    console.error('Navigation error:', err);
+    // Fallback if navigation fails
+    window.location.href = '/menu';
+  }
   };
 
   if (isProcessing) {

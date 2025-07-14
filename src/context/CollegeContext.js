@@ -120,13 +120,15 @@ export const CollegeProvider = ({ children }) => {
         await collegeAPI.updateUserCollege(collegeId);
         localStorage.setItem('selectedCollege', JSON.stringify({
           id: college._id,
-          name: college.name
+          name: college.name,
+          code: college.code
         }));
       } else {
         // Save to localStorage for non-logged users
         localStorage.setItem('selectedCollege', JSON.stringify({
           id: college._id,
-          name: college.name
+          name: college.name,
+          code: college.code
         }));
       }
     } catch (error) {
