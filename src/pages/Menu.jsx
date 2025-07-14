@@ -155,13 +155,13 @@ function MenuItem({ item, onOrder, onEdit, isAdmin }) {
                   >
                     Add to Cart
                   </motion.button>
-                  <motion.button
+                  {/* <motion.button
                     whileTap={{ scale: 0.95 }}
                     onClick={() => onOrder(item)}
                     className="flex-1 py-3 border border-accent text-accent font-body font-medium rounded-md hover:bg-accent/10 transition-colors"
                   >
                     Order Now
-                  </motion.button>
+                  </motion.button> */}
                 </motion.div>
               )}
             </AnimatePresence>
@@ -329,6 +329,12 @@ export default function Menu() {
     if (!user) {
       toast.error('Please login to place an order');
       navigate('/login');
+      return;
+    }
+
+    if (!isPhoneVerified) {
+      toast.error('Phone verification required before placing orders');
+      navigate('/profile');
       return;
     }
 

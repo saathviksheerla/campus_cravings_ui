@@ -47,7 +47,7 @@ export default function Cart() {
     // Check phone verification status before placing order
     if (!isPhoneVerified) {
       toast.error('Phone verification required before placing orders');
-      navigate('/profile');
+      navigate('/verify-phone', { state: { returnTo: '/cart' } });
       return;
     }
 
@@ -91,7 +91,7 @@ export default function Cart() {
       // Special handling for verification errors
       if (error.response?.data?.verificationNeeded) {
         toast.error('Phone verification required before placing orders');
-        navigate('/profile');
+        navigate('/verify-phone', { state: { returnTo: '/cart' } });
       } else {
         toast.error(error.response?.data?.error || 'Failed to place order');
       }
@@ -139,7 +139,7 @@ export default function Cart() {
               You must verify your phone number before you can place orders.
             </p>
             <button
-              onClick={() => navigate('/profile')}
+              onClick={() => navigate('/verify-phone', { state: { returnTo: '/cart' } })}
               className="mt-2 ml-7 text-accent hover:text-accent-light text-sm font-medium"
             >
               Verify Now →

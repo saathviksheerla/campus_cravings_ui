@@ -274,12 +274,34 @@ export default function Profile() {
             )}
 
             {/* Mobile Number Section */}
-            {user?.phone && (
+            {/* {user?.phone && (
               <div className="px-6 py-6">
                 <h3 className="text-sm font-medium text-secondary/70">Phone Number</h3>
                 <p className="mt-2 font-body text-lg text-secondary">{user?.phone}</p>
               </div>
-            )}
+            )} */}
+
+{user?.phone && (
+  <div className="px-6 py-6">
+    <div className="flex justify-between items-center">
+      <h3 className="text-sm font-medium text-secondary/70">Phone Number</h3>
+      {!user?.isPhoneVerified && (
+        <button
+          onClick={() => navigate('/verify-phone', { state: { returnTo: '/profile' } })}
+          className="text-accent hover:text-accent-light text-sm font-medium"
+        >
+          Verify Phone
+        </button>
+      )}
+    </div>
+    <p className="mt-2 font-body text-lg text-secondary">{user?.phone}</p>
+    {user?.isPhoneVerified ? (
+      <span className="mt-1 text-green-400 text-sm">✓ Verified</span>
+    ) : (
+      <span className="mt-1 text-red-400 text-sm">⚠ Not verified</span>
+    )}
+  </div>
+)}
 
             {/* Email Address Section */}
             <div className="px-6 py-6">
