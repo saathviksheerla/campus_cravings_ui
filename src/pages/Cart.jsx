@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthenticationContext';
+import { useCollege } from '../context/CollegeContext';
 import { createOrder, checkPhoneStatus } from '../services/api';
 import toast from 'react-hot-toast';
 
 export default function Cart() {
   const { cartItems, removeFromCart, updateQuantity, getCartTotal, clearCart } = useCart();
   const { user } = useAuth();
+  const { selectedCollege, isCollegeSelected } = useCollege();
   const navigate = useNavigate();
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [isPhoneVerified, setIsPhoneVerified] = useState(false);
@@ -44,6 +46,11 @@ export default function Cart() {
       return;
     }
 
+    if (!selectedCollege || !isCollegeSelected) {
+      toast.error('Please select a college first');
+      return;
+    }
+
     // Check phone verification status before placing order
     if (!isPhoneVerified) {
       toast.error('Phone verification required before placing orders');
@@ -60,23 +67,7 @@ export default function Cart() {
         quantity: item.quantity
       }));
 
-      //console.log('orderItems: ', orderItems);
-
-      let collegeId;
-      if (user?.selectedCollegeId) {
-          collegeId = user.selectedCollegeId;
-      } else {
-          const storedCollege = localStorage.getItem('selectedCollege');
-          if (storedCollege) {
-              try {
-                  collegeId = JSON.parse(storedCollege).id;
-              } catch (e) {
-                  console.error("Error parsing stored college data:", e);
-                  // Handle error, maybe clear localStorage or set a default
-                  collegeId = '';
-              }
-          }
-      }
+      const collegeId = selectedCollege._id;
       
       await createOrder({ items: orderItems, collegeId: collegeId });
       
@@ -99,6 +90,20 @@ export default function Cart() {
       setIsPlacingOrder(false);
     }
   };
+
+  // Show loading or college selection message
+  if (!isCollegeSelected || !selectedCollege) {
+    return (
+      <div className="bg-primary min-h-screen">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <h1 className="font-display text-3xl font-bold text-accent">Your Cart</h1>
+            <p className="mt-4 font-body text-secondary/70">Please select a college to view your cart</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (cartItems.length === 0) {
     return (
